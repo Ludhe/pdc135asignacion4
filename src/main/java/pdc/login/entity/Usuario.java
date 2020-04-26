@@ -8,16 +8,16 @@ import java.io.Serializable;
  */
 public class Usuario implements Serializable{
     
-    private final String user;
+    private final String uid;
     private final String pass;
 
-    public Usuario(String user, String pass) {
-        this.user = user;
+    public Usuario(String uid, String pass) {
+        this.uid = uid;
         this.pass = pass;
     }
 
-    public String getUser() {
-        return user;
+    public String getUid() {
+        return uid;
     }
 
     public String getPass() {
@@ -32,7 +32,7 @@ public class Usuario implements Serializable{
             return false;
         }
         Usuario usuario = (Usuario) o;
-        if (user != null ? !user.equals(usuario.user) : usuario.user != null) {
+        if (uid != null ? !uid.equals(usuario.uid) : usuario.uid != null) {
             return false;
         }
         if (pass != null ? !pass.equals(usuario.pass) : usuario.pass != null) {
@@ -42,13 +42,13 @@ public class Usuario implements Serializable{
     }
 
     public int hashCode() {
-        int result = user != null ? user.hashCode() : 0;
-        result = 31 * result + (user != null ? pass.hashCode() : 0);
+        int result = uid != null ? uid.hashCode() : 0;
+        result = 31 * result + (uid != null ? pass.hashCode() : 0);
         return result;
     }
 
     public String toString() {
-        return "Usuario: " + user + ", contraseña" + pass + ")";
+        return "Usuario: " + uid + ", contraseña" + pass + ")";
     }
     
 }

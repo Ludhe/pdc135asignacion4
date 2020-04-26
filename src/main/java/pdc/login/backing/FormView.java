@@ -5,6 +5,7 @@
  */
 package pdc.login.backing;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,8 +21,10 @@ import org.apache.directory.api.ldap.model.name.Dn;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapConnectionConfig;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
+import pdc.login.entity.Usuario;
 
 import utils.MyCookie;
+import utils.Serializacion;
 
 /**
  *
@@ -32,23 +35,38 @@ import utils.MyCookie;
 public class FormView implements Serializable{
     @PostConstruct
     void init() {
-        //al iniciar que se haga la conexión con LDAP
+        
+        myCookie = new MyCookie();
+        if (myCookie.getCookieValue("session") == null) {
+            myCookie.redirect("/index.jsf");
+        } else {
+            String s = myCookie.getCookieValue("session");
+            try {
+                user = (Usuario) Serializacion.fromString(s);
+            } catch (IOException | ClassNotFoundException e) {
+                Logger.getLogger(this.getClass().getClass().getSimpleName()).log(Level.SEVERE, null, e);
+            }
+        }
+        
+        //voy a poner esto en una clase, te lo prometo ah xd
         try {
-            //localhost o IP de la máquina virtual
-            config.setLdapHost("10.9.0.5");
+            config.setLdapHost("192.168.122.195");
             config.setLdapPort(389);
-            dn = new Dn(ADMIN_DN);
+            dn = new Dn(user.getUid());
             connection = new LdapNetworkConnection(config);
             connection.setTimeOut(-1);
-            connection.bind(dn, ADMIN_PWD);
+            connection.bind(dn, user.getPass());
 
         } catch (LdapException ex) {
             Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+        //esto no debe ir aquí
         buscarLdap();
     }
     
+    //usuario de la conexión y su respectiva cookie
+    private MyCookie myCookie;
+    private Usuario user;
    //Variables del formulario con sus getter y setter
     private String usuario;
     private String nombre;
@@ -96,10 +114,10 @@ public class FormView implements Serializable{
         this.apellido = apellido;
     }
     
-    //Variables para LDAP, modificar según dominio (pupusa, nuegado etc), poner credenciales
-    public static final String DIR_ROOT = "ou=usuarios,dc=pupusa,dc=occ,dc=ues,dc=edu,dc=sv";
-    public static final String ADMIN_DN = "cn=admin,dc=pupusa,dc=occ,dc=ues,dc=edu,dc=sv";
-    public static final String ADMIN_PWD = "Luisito97";
+    //Variables del directorio LDAP, modificar dominio
+    public static final String DIR_ROOT = "ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv";
+    
+    //esto lo voy a borrar cuando este la clase
     LdapConnectionConfig config = new LdapConnectionConfig();
     LdapConnection connection;
     Dn dn;
@@ -123,7 +141,7 @@ public class FormView implements Serializable{
     //método para devolver todos los  usuarios en el árbol LDAP
     public void buscarLdap(){
         try {
-        EntryCursor cursor = connection.search("ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=)", SearchScope.SUBTREE);
+        EntryCursor cursor = connection.search("ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=*)", SearchScope.SUBTREE);
          System.out.println("IMPRIMIENDO RESULTADOS");
             for (Entry entry : cursor) {
             System.out.println(entry.get("uid"));
