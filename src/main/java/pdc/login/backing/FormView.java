@@ -187,6 +187,15 @@ public class FormView implements Serializable{
             return null;
     }
     
-    
+    public void logout() throws IOException {
+        try {
+            connection.unBind();
+            connection.close(); 
+        } catch (LdapException ex) {
+            Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        myCookie.removeCookie("session");
+        myCookie.redirect("/index.jsf");
+    }
     
 }

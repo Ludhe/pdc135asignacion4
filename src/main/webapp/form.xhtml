@@ -8,42 +8,45 @@
     </h:head>
     <h:body>
         <h:form>
-         <h:panelGrid id = "panel" columns = "2" border = "1"
-            cellpadding = "10" cellspacing = "1">
-            
-            <f:facet name = "header">
-               <h:outputText value = "Creación de cuenta SIP"/>
-            </f:facet>
-            <h:outputLabel value = "Usuario:" />
-            <h:inputText value = "#{formView.usuario}" />
-            <h:outputLabel value = "Nombre:" />
-            <h:inputText  value="#{formView.nombre}"/>
-            <h:outputLabel value = "Apellido:" />
-            <h:inputText value="#{formView.apellido}"/>
-            <h:outputLabel value = "Contraseña:" />
-            <h:inputSecret value="#{formView.contrasenia}"/>
-            <f:facet name = "footer">
-               <h:panelGroup style = "display:block; text-align:center">
-                   <h:commandButton id = "Aceptar" value = "Aceptar" actionListener="#{formView.crearLdap}"/>
-               </h:panelGroup>              
-            </f:facet>
-         </h:panelGrid>
-      </h:form>
+            <h:panelGrid id = "panel" columns = "2" border = "1"
+                         cellpadding = "10" cellspacing = "1">
 
-      <h:form>
-          <h:panelGrid id = "panel" columns = "2" border = "1"
-                       cellpadding = "10" cellspacing = "1">
-            <f:facet name = "header">
-               <h:outputText value = "Buscar un usuario SIP"/>
-            </f:facet>
-            <h:outputLabel value = "Usuario:" />
-            <h:inputText value = "#{formView.busqueda}" />
-            <f:facet name = "footer">
-                <h:panelGroup style = "display:block; text-align:center">
-                    <h:commandButton id = "Buscar" value = "Buscar" actionListener="#{formView.buscarUnoLdap}"/>
-                </h:panelGroup>
-            </f:facet>
-          </h:panelGrid>
-      </h:form>
+                <f:facet name = "header">
+                    <h:outputText value = "Creación de cuenta SIP"/>
+                </f:facet>
+                <h:outputLabel value = "Usuario:" />
+                <h:inputText value = "#{formView.usuario}" />
+                <h:outputLabel value = "Nombre:" />
+                <h:inputText  value="#{formView.nombre}"/>
+                <h:outputLabel value = "Apellido:" />
+                <h:inputText value="#{formView.apellido}"/>
+                <h:outputLabel value = "Contraseña:" />
+                <h:inputSecret value="#{formView.contrasenia}"/>
+                <f:facet name = "footer">
+                    <h:panelGroup style = "display:block; text-align:center">
+                        <h:commandButton id = "Aceptar" value = "Aceptar" actionListener="#{formView.crearLdap}"/>
+                    </h:panelGroup>
+                    <h:panelGroup style = "display:block; text-align:center">
+                        <h:commandButton id = "submit" value = "Cerrar Sesión" actionListener="#{formView.logout}"/>
+                    </h:panelGroup>
+                </f:facet>
+            </h:panelGrid>
+        </h:form>
+
+        <h:form>
+            <h:panelGrid id = "panel" columns = "2" border = "1"
+                         cellpadding = "10" cellspacing = "1">
+                <f:facet name = "header">
+                    <h:outputText value = "Buscar un usuario SIP"/>
+                </f:facet>
+                <h:outputLabel value = "Usuario:" />
+                <h:inputText value = "#{formView.busqueda}" />
+                <f:facet name = "footer">
+                    <h:panelGroup style = "display:block; text-align:center">
+                        <h:commandButton id = "Buscar" value = "Buscar" actionListener="#{formView.buscarUnoLdap}"/>
+                    </h:panelGroup>
+                </f:facet>
+            </h:panelGrid>
+        </h:form>
     </h:body>
 </html>
