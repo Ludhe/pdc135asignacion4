@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import org.apache.directory.ldap.client.api.LdapConnection;
 import pdc.login.entity.Usuario;
 import utils.MyCookie;
 import utils.Serializacion;
@@ -35,8 +36,8 @@ public class LoginView implements Serializable {
     private String password;
     private MyCookie myCookie;
     Usuario user; //el usuario que se logge
-    
-    Boolean isLogged;
+    LdapConnection connection;
+
 
     public String getUsuario() {
         return usuario;
@@ -57,16 +58,15 @@ public class LoginView implements Serializable {
     //Método al dar click al botón iniciar
     public void login() throws IOException {
         if (!usuario.isEmpty() && !password.isEmpty()) {
+            user = new Usuario(usuario, password);
+            connection = Login.tryLogin(user);
             
-            isLogged = Login.tryLogin(usuario, password);
-            
-            if (isLogged) {
-                user = new Usuario(usuario, password);                
+            if (connection != null && connection.isConnected()) {                               
                 String s = Serializacion.toString(user);
                 myCookie.setCookieValue("session", s);
                 myCookie.redirect("/form.jsf");
             } else {
-                System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! POS NO SE LOGGUEÓ");
+                System.out.println("aqui debo manejar los errores");
             }                                       
         }
     }

@@ -12,6 +12,7 @@ import org.apache.directory.api.ldap.model.name.Dn;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapConnectionConfig;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
+import pdc.login.entity.Usuario;
 
 /**
  *
@@ -23,24 +24,25 @@ public class Login {
         
     }
     
-    public static boolean tryLogin(String usuario, String password){
+    public static LdapConnection tryLogin(Usuario usuario){
         LdapConnectionConfig connectionConfig = new LdapConnectionConfig();
         LdapConnection connection;
         Dn dn;
+        String user;
         connectionConfig.setLdapHost("192.168.122.195");
         connectionConfig.setLdapPort(389);
-        usuario = "cn="+usuario+",dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv"; 
+        user = "cn="+usuario.getUid()+",dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv"; 
         try {
-                dn = new Dn(usuario);
+                dn = new Dn(user);
                 connection = new LdapNetworkConnection(connectionConfig);
                 connection.setTimeOut(-1);                   
-                connection.bind(dn, password);
-                System.out.println(connection);
+                connection.bind(dn, usuario.getPass());
             } catch (LdapException ex) {
-                Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
-                return false;                
+                Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);               
+                return null;                
             }
-        return true;
+        return connection;
     }
-     
+    
+    
 }

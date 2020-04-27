@@ -39,10 +39,8 @@ public class FormView implements Serializable{
             String s = myCookie.getCookieValue("session");
             try {
                 user = (Usuario) Serializacion.fromString(s);
-                isLogged = Login.tryLogin(user.getUid(), user.getPass());
-                System.out.println(connection);
-                if (!isLogged) {
-                    System.out.println("debería matar la cookie y redirigir a login");
+                connection = Login.tryLogin(user);
+                if (connection.isConnected()) {
                 }
             } catch (IOException | ClassNotFoundException e) {
                 Logger.getLogger(this.getClass().getClass().getSimpleName()).log(Level.SEVERE, null, e);
@@ -53,7 +51,6 @@ public class FormView implements Serializable{
     //usuario de la conexión y su respectiva cookie
     private MyCookie myCookie;
     private Usuario user;
-    Boolean isLogged;
     //Variables del directorio LDAP, modificar dominio
     public static final String DIR_ROOT = "ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv";
     LdapConnection connection;
