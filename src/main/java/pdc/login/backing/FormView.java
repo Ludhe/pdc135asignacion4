@@ -7,6 +7,8 @@ package pdc.login.backing;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -29,7 +31,8 @@ import utils.Serializacion;
  */
 @Named
 @ViewScoped
-public class FormView implements Serializable{
+public class FormView implements Serializable {
+
     @PostConstruct
     void init() {
         myCookie = new MyCookie();
@@ -47,12 +50,13 @@ public class FormView implements Serializable{
             }
         }
     }
-    
+
     //usuario de la conexión y su respectiva cookie
     private MyCookie myCookie;
     private Usuario user;
     //Variables del directorio LDAP, modificar dominio
-    public static final String DIR_ROOT = "ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv";
+    //public static final String host = "yuca";
+    public static final String DIR_ROOT = "ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv";
     LdapConnection connection;
     //Variables del formulario con sus getter y setter
     private String usuario;
@@ -76,8 +80,8 @@ public class FormView implements Serializable{
     public void setContrasenia(String contrasenia) {
         this.contrasenia = contrasenia;
     }
-    
-        public String getUsuario() {
+
+    public String getUsuario() {
         return usuario;
     }
 
@@ -102,46 +106,61 @@ public class FormView implements Serializable{
     }
 
     //método para buscar solamente un usuario en el árbol LDAP
-    public void buscarUnoLdap(){
+    public void buscarUnoLdap() {
         if (!busqueda.isEmpty()) {
             try {
-            EntryCursor cursor = connection.search("ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv", "(uid="+busqueda+")", SearchScope.SUBTREE);
-             System.out.println("IMPRIMIENDO RESULTADOS");
+                EntryCursor cursor = connection.search("ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=" + busqueda + ")", SearchScope.SUBTREE);
+                System.out.println("IMPRIMIENDO RESULTADOS");
                 for (Entry entry : cursor) {
-                System.out.println(entry);
+                    System.out.println(entry);
                 }
-            }
-            catch ( LdapException ex) {
-            Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }       
-    }
-    
-    //método para devolver todos los  usuarios en el árbol LDAP
-    public void buscarLdap(){
-        try {
-        EntryCursor cursor = connection.search("ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=*)", SearchScope.SUBTREE);
-         System.out.println("IMPRIMIENDO RESULTADOS");
-            for (Entry entry : cursor) {
-            System.out.println(entry.get("uid"));
+            } catch (LdapException ex) {
+                Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        catch ( LdapException ex) {
-        Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
-        }       
     }
-    
+
+    //método para devolver todos los  usuarios en el árbol LDAP
+    public List<FormView> tbuscarLdap() {
+        List<FormView> list = new ArrayList<>();
+        FormView view;
+        try {
+            EntryCursor cursor = connection.search("ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=*)", SearchScope.SUBTREE);
+            System.out.println("IMPRIMIENDO RESULTADOS");
+            for (Entry entry : cursor) {
+                System.out.println(entry.get("uid"));
+                view = new FormView();
+                if (cursor == null) {
+                    view.setNombre("sin datos");
+                    view.setApellido("sin datos");
+                    view.setUsuario("sin datos");
+                    list.add(view);
+                } else {
+                    view.setNombre(entry.get("cn").getString());
+                    view.setApellido(entry.get("sn").getString());
+                    view.setUsuario(entry.get("uid").getString());
+                    System.out.println("objeto");
+                    System.out.println(view.getNombre()+" "+view.getApellido()+" "+view.getUsuario());
+                    list.add(view);
+                }
+            }
+        } catch (LdapException ex) {
+            Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return list;
+    }
+
     //método para crear un usuario en el árbol LDAP
-    public void crearLdap(){
+    public void crearLdap() {
         if (!usuario.isEmpty() && !nombre.isEmpty() && !apellido.isEmpty() && !contrasenia.isEmpty()) {
             //encriptar contraseña
-            System.out.println(contrasenia);            
-            contrasenia = getHash(usuario+":asterisk:"+contrasenia, "MD5");
             System.out.println(contrasenia);
-            
+            contrasenia = getHash(usuario + ":asterisk:" + contrasenia, "MD5");
+            System.out.println(contrasenia);
+
             StringBuilder builder = new StringBuilder();
-            builder.append("uid="+usuario+","+DIR_ROOT);
-            String dnInsertar=builder.toString();
+            builder.append("uid=" + usuario + "," + DIR_ROOT);
+            String dnInsertar = builder.toString();
 
             try {
                 connection.add(
@@ -154,48 +173,48 @@ public class FormView implements Serializable{
                                 "objectClass: AsteriskExtension",
                                 "objectClass: person",
                                 "objectClass: top",
-                                "AstAccountCallerID", nombre+" "+apellido,
+                                "AstAccountCallerID", nombre + " " + apellido,
                                 "cn", nombre,
                                 "sn", apellido,
                                 "uid", usuario,
                                 "AstAccountRealmedPassword", contrasenia,
                                 "AstAccountType: friend",
                                 "AstAccountHost: dynamic"
-                            ) );
+                        ));
             } catch (LdapException ex) {
                 Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }        
+        }
     }
-    
+
     //método para encriptar la contraseña
     /* Retorna un hash a partir de un tipo y un texto */
     public static String getHash(String txt, String hashType) {
-            try {
-                    java.security.MessageDigest md = java.security.MessageDigest
-                                    .getInstance(hashType);
-                    byte[] array = md.digest(txt.getBytes());
-                    StringBuffer sb = new StringBuffer();
-                    for (int i = 0; i < array.length; ++i) {
-                            sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100)
-                                            .substring(1, 3));
-                    }
-                    return sb.toString();
-            } catch (java.security.NoSuchAlgorithmException e) {
-                    System.out.println(e.getMessage());
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest
+                    .getInstance(hashType);
+            byte[] array = md.digest(txt.getBytes());
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < array.length; ++i) {
+                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100)
+                        .substring(1, 3));
             }
-            return null;
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
     }
-    
+
     public void logout() throws IOException {
         try {
             connection.unBind();
-            connection.close(); 
+            connection.close();
         } catch (LdapException ex) {
             Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
         }
         myCookie.removeCookie("session");
         myCookie.redirect("/index.jsf");
     }
-    
+
 }

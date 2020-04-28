@@ -29,9 +29,9 @@ public class Login {
         LdapConnection connection;
         Dn dn;
         String user;
-        connectionConfig.setLdapHost("192.168.122.195");
+        connectionConfig.setLdapHost("192.168.0.17");
         connectionConfig.setLdapPort(389);
-        user = "cn="+usuario.getUid()+",dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv"; 
+        user = "cn="+usuario.getUid()+",dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv"; 
         try {
                 dn = new Dn(user);
                 connection = new LdapNetworkConnection(connectionConfig);
