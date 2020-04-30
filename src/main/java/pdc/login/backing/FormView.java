@@ -16,7 +16,10 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
+import org.apache.directory.api.ldap.model.entry.DefaultModification;
 import org.apache.directory.api.ldap.model.entry.Entry;
+import org.apache.directory.api.ldap.model.entry.Modification;
+import org.apache.directory.api.ldap.model.entry.ModificationOperation;
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.ldap.client.api.LdapConnection;
@@ -135,9 +138,9 @@ public class FormView implements Serializable {
         FormView view;
         try {
             EntryCursor cursor = connection.search("ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=*)", SearchScope.SUBTREE);
-            System.out.println("IMPRIMIENDO RESULTADOS");
+            //System.out.println("IMPRIMIENDO RESULTADOS");
             for (Entry entry : cursor) {
-                System.out.println(entry.get("uid"));
+                //System.out.println(entry.get("uid"));
                 view = new FormView();
                 if (cursor == null) {
                     view.setNombre("sin datos");
@@ -148,8 +151,10 @@ public class FormView implements Serializable {
                     view.setNombre(entry.get("cn").getString());
                     view.setApellido(entry.get("sn").getString());
                     view.setUsuario(entry.get("uid").getString());
-                    System.out.println("objeto");
-                    System.out.println(view.getNombre() + " " + view.getApellido() + " " + view.getUsuario());
+                    //view.setContrasenia(entry.get("AstAccountRealmedPassword").getString());
+                    view.setBusqueda(entry.get("uid").getString());
+                    //System.out.println("objeto");
+                    //System.out.println(view.getNombre() + " " + view.getApellido() + " " + view.getUsuario());
                     list.add(view);
                 }
             }
@@ -230,7 +235,20 @@ public class FormView implements Serializable {
         //System.out.println("curso seleccionado "+ this.view.getNombre());
         if (!(this.view == null)) {
             connection.delete("uid=" + this.view.getUsuario() + ",ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv");
-        }     
+        }
     }
 
+    public void Editar() throws LdapException {
+        if (!(this.view.getUsuario().isEmpty() && this.view.getNombre().isEmpty() && this.view.getApellido().isEmpty() && this.view.getContrasenia().isEmpty())) {
+            //System.out.println("Usuario 0.0 " + this.view.getUsuario());
+            //this.view.contrasenia = getHash(this.view.getUsuario() + ":asterisk:" + this.view.getContrasenia(), "MD5");
+            Modification modiNombre = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "cn", this.view.getNombre());
+            Modification modiApellido = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "sn", this.view.getApellido());
+            Modification modiContrasenia = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "AstAccountRealmedPassword", this.view.getContrasenia());
+            Modification modiID = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "AstAccountCallerID", this.view.getNombre() + " " + this.view.getApellido());
+            
+            connection.modify("uid=" + this.view.getUsuario() + ",ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv",modiApellido,modiNombre,modiContrasenia,modiID);
+        }
+
+    }
 }

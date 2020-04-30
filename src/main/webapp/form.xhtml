@@ -62,6 +62,7 @@
                 </p:column>
             </p:dataTable>
             <p:commandButton process="tabla" value="Eliminar" update="ouEliminar" oncomplete="PF('ouEliminar').show()"/>
+            <p:commandButton process="tabla" value="Editar" update="ouEditar" oncomplete="PF('ouEditar').show()" />
             <p:dialog header="Advertencia" widgetVar="ouEliminar" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
                 <p:outputPanel id="ouEliminar" style="text-align:center;" >
                     <p:panelGrid columns="2" rendered="#{not empty formView.view}" columnClasses="label,value">
@@ -70,6 +71,28 @@
                         </f:facet>
                         <p:commandButton id="eliminarSi" value="SI" action="#{formView.eliminar()}" update="tabla" oncomplete="PF('ouEliminar').hide()"/>
                         <p:commandButton id="eliminarNo" value="NO" oncomplete="PF('ouEliminar').hide()"/>
+                    </p:panelGrid>
+                </p:outputPanel>
+            </p:dialog>
+            <p:dialog header="Editar Usuario" widgetVar="ouEditar" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
+                <p:outputPanel id="ouEditar" style="text-align:center; 
+                               border: none;
+                               ">
+                    <p:panelGrid id="panel" columns="3" layout="grid"  style="width: 775px; height: 300px">
+                        <p:outputLabel for="inNombre"  value="Nombre" />
+                        <p:inputText id="inNombre" value="#{formView.view.nombre}" maxlength="25"/>
+                        <p:message for="inNombre" />
+                        <p:outputLabel for="inApellido"  value="Apellido" />
+                        <p:inputText id="inApellido" value="#{formView.view.apellido}" maxlength="25"/>
+                        <p:message for="inApellido" />
+                        <p:outputLabel for="inPass"  value="Contraseña" />
+                        <p:inputText type="password" id="inPass" value="#{formView.view.contrasenia}" maxlength="25"/>
+                        <p:message for="inPass" />
+                        <f:facet name="header">
+                            <p:outputLabel value="Todos los datos son requeridos"/>
+                        </f:facet>
+                        <p:commandButton id="btnGuardar" value="Guardar" action="#{formView.Editar()}" update="tabla" oncomplete="PF('ouEditar').hide()"/>
+                        <p:commandButton id="btnCancelar" value="Cancelar" oncomplete="PF('ouEditar').hide()"/>
                     </p:panelGrid>
                 </p:outputPanel>
             </p:dialog>
