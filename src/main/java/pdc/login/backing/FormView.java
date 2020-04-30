@@ -64,6 +64,7 @@ public class FormView implements Serializable {
     private String apellido;
     private String contrasenia;
     private String busqueda;
+    private FormView view;
 
     public String getBusqueda() {
         return busqueda;
@@ -105,6 +106,14 @@ public class FormView implements Serializable {
         this.apellido = apellido;
     }
 
+    public FormView getView() {
+        return view;
+    }
+
+    public void setView(FormView view) {
+        this.view = view;
+    }
+
     //método para buscar solamente un usuario en el árbol LDAP
     public void buscarUnoLdap() {
         if (!busqueda.isEmpty()) {
@@ -121,7 +130,7 @@ public class FormView implements Serializable {
     }
 
     //método para devolver todos los  usuarios en el árbol LDAP
-    public List<FormView> tbuscarLdap() {
+    public List<FormView> buscarLdap() {
         List<FormView> list = new ArrayList<>();
         FormView view;
         try {
@@ -140,7 +149,7 @@ public class FormView implements Serializable {
                     view.setApellido(entry.get("sn").getString());
                     view.setUsuario(entry.get("uid").getString());
                     System.out.println("objeto");
-                    System.out.println(view.getNombre()+" "+view.getApellido()+" "+view.getUsuario());
+                    System.out.println(view.getNombre() + " " + view.getApellido() + " " + view.getUsuario());
                     list.add(view);
                 }
             }
@@ -215,6 +224,13 @@ public class FormView implements Serializable {
         }
         myCookie.removeCookie("session");
         myCookie.redirect("/index.jsf");
+    }
+
+    public void eliminar() throws LdapException {
+        //System.out.println("curso seleccionado "+ this.view.getNombre());
+        if (!(this.view == null)) {
+            connection.delete("uid=" + this.view.getUsuario() + ",ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv");
+        }     
     }
 
 }

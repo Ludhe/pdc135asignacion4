@@ -50,7 +50,7 @@
             </h:panelGrid>
         </h:form>
         <h:form>
-            <p:dataTable value="#{formView.tbuscarLdap()}" var="dato">
+            <p:dataTable id="tabla" value="#{formView.buscarLdap()}" var="dato" selectionMode="single" selection="#{formView.view}" rowKey="#{dato.usuario}">
                 <p:column headerText="Nombre">
                     <h:outputText value="#{dato.nombre}"></h:outputText>
                 </p:column>
@@ -60,10 +60,19 @@
                 <p:column headerText="Usuario">
                     <h:outputText value="#{dato.usuario}"></h:outputText>
                 </p:column>
-                <f:facet name="footer">
-                    <p:commandButton></p:commandButton>
-                </f:facet>
             </p:dataTable>
+            <p:commandButton process="tabla" value="Eliminar" update="ouEliminar" oncomplete="PF('ouEliminar').show()"/>
+            <p:dialog header="Advertencia" widgetVar="ouEliminar" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
+                <p:outputPanel id="ouEliminar" style="text-align:center;" >
+                    <p:panelGrid columns="2" rendered="#{not empty formView.view}" columnClasses="label,value">
+                        <f:facet name="header">
+                            <p:outputLabel value="¿seguro eliminar al usuario #{formView.view.usuario}?"/>
+                        </f:facet>
+                        <p:commandButton id="eliminarSi" value="SI" action="#{formView.eliminar()}" update="tabla" oncomplete="PF('ouEliminar').hide()"/>
+                        <p:commandButton id="eliminarNo" value="NO" oncomplete="PF('ouEliminar').hide()"/>
+                    </p:panelGrid>
+                </p:outputPanel>
+            </p:dialog>
         </h:form>
     </h:body>
 </html>
