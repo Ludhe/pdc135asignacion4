@@ -59,7 +59,7 @@ public class FormView implements Serializable {
     private Usuario user;
     //Variables del directorio LDAP, modificar dominio
     //public static final String host = "yuca";
-    public static final String DIR_ROOT = "ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv";
+    public static final String DIR_ROOT = "ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv";
     LdapConnection connection;
     //Variables del formulario con sus getter y setter
     private String usuario;
@@ -121,7 +121,7 @@ public class FormView implements Serializable {
     public void buscarUnoLdap() {
         if (!busqueda.isEmpty()) {
             try {
-                EntryCursor cursor = connection.search("ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=" + busqueda + ")", SearchScope.SUBTREE);
+                EntryCursor cursor = connection.search("ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=" + busqueda + ")", SearchScope.SUBTREE);
                 System.out.println("IMPRIMIENDO RESULTADOS");
                 for (Entry entry : cursor) {
                     System.out.println(entry);
@@ -137,7 +137,7 @@ public class FormView implements Serializable {
         List<FormView> list = new ArrayList<>();
         FormView view;
         try {
-            EntryCursor cursor = connection.search("ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=*)", SearchScope.SUBTREE);
+            EntryCursor cursor = connection.search("ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=*)", SearchScope.SUBTREE);
             //System.out.println("IMPRIMIENDO RESULTADOS");
             for (Entry entry : cursor) {
                 //System.out.println(entry.get("uid"));
@@ -234,7 +234,7 @@ public class FormView implements Serializable {
     public void eliminar() throws LdapException {
         //System.out.println("curso seleccionado "+ this.view.getNombre());
         if (!(this.view == null)) {
-            connection.delete("uid=" + this.view.getUsuario() + ",ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv");
+            connection.delete("uid=" + this.view.getUsuario() + ",ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv");
         }
     }
 
@@ -247,7 +247,7 @@ public class FormView implements Serializable {
             Modification modiContrasenia = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "AstAccountRealmedPassword", this.view.getContrasenia());
             Modification modiID = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "AstAccountCallerID", this.view.getNombre() + " " + this.view.getApellido());
             
-            connection.modify("uid=" + this.view.getUsuario() + ",ou=usuarios,dc=yuca,dc=occ,dc=ues,dc=edu,dc=sv",modiApellido,modiNombre,modiContrasenia,modiID);
+            connection.modify("uid=" + this.view.getUsuario() + ",ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv",modiApellido,modiNombre,modiContrasenia,modiID);
         }
 
     }

@@ -8,34 +8,82 @@
         <title>FORMULARIO</title>
     </h:head>
     <h:body>
-        <h:form>
-            <h:panelGrid id = "panel" columns = "2" border = "1"
-                         cellpadding = "10" cellspacing = "1">
+        <h2 style="text-align: center"><p:outputLabel value="Usuarios SIP"/></h2>
+        
+        <p:separator />
+        <br/>
+        <h:form id="form">
+            <p:dataTable id="tabla" value="#{formView.buscarLdap()}" var="dato" selectionMode="single" selection="#{formView.view}" rowKey="#{dato.usuario}" paginator="true" rows="5" paginatorPosition="bottom" >
+                <p:column headerText="Nombre">
+                    <h:outputText value="#{dato.nombre}"></h:outputText>
+                </p:column>
+                <p:column headerText="Apellido">
+                    <h:outputText value="#{dato.apellido}"></h:outputText>
+                </p:column>
+                <p:column headerText="Usuario">
+                    <h:outputText value="#{dato.usuario}"></h:outputText>
+                </p:column>
+            </p:dataTable>
+            <br/>
+            <div>
+                <h4>Administrar:
+                <p:commandButton process="tabla" value="Agregar" update="ouAgregar" oncomplete="PF('ouAgregar').show()" />
+                <p:commandButton process="tabla" value="Editar" update="ouEditar" oncomplete="PF('ouEditar').show()" />
+                <p:commandButton process="tabla" value="Eliminar" update="ouEliminar" oncomplete="PF('ouEliminar').show()"/>
+                </h4>
+            </div>
+            <h4 style="text-align: right">Cerrar Sesión: 
+               <p:commandButton id = "submit" value = "Salir" actionListener="#{formView.logout}"/> 
+            </h4>            
+            
+            <p:dialog header="Agregar una nueva cuenta SIP" widgetVar="ouAgregar" modal="true" showEffect="fade" hideEffect="fade" resizable="false" width="50%">
+                <p:fieldset>
+                    <h:panelGrid id="ouAgregar" style="position: relative;left: 15%;" columns="2" cellpadding="6">
+                        <p:outputLabel  value="Usuario:" />
+                        <p:inputText value="#{formView.usuario}" maxlength="25"/>
+                        <p:outputLabel  value="Nombre:" />
+                        <p:inputText value="#{formView.nombre}" maxlength="25"/>
+                        <p:outputLabel  value="Apellido:" />
+                        <p:inputText value="#{formView.apellido}" maxlength="25"/>
+                        <p:outputLabel  value="Contraseña:" />
+                        <p:inputText type="password" value="#{formView.contrasenia}" maxlength="25"/>
+                        <p:commandButton id="Aceptar" value="Aceptar" actionListener="#{formView.crearLdap}" update="tabla" oncomplete="PF('ouAgregar').hide()"/>
+                        <p:commandButton value="Cancelar" oncomplete="PF('ouAgregar').hide()"/> 
+                    </h:panelGrid>
 
-                <f:facet name = "header">
-                    <h:outputText value = "Creación de cuenta SIP"/>
-                </f:facet>
-                <h:outputLabel value = "Usuario:" />
-                <h:inputText value = "#{formView.usuario}" />
-                <h:outputLabel value = "Nombre:" />
-                <h:inputText  value="#{formView.nombre}"/>
-                <h:outputLabel value = "Apellido:" />
-                <h:inputText value="#{formView.apellido}"/>
-                <h:outputLabel value = "Contraseña:" />
-                <h:inputSecret value="#{formView.contrasenia}"/>
-                <f:facet name = "footer">
-                    <h:panelGroup style = "display:block; text-align:center">
-                        <h:commandButton id = "Aceptar" value = "Aceptar" actionListener="#{formView.crearLdap}"/>
-                    </h:panelGroup>
-                    <h:panelGroup style = "display:block; text-align:center">
-                        <h:commandButton id = "submit" value = "Cerrar Sesión" actionListener="#{formView.logout}"/>
-                    </h:panelGroup>
-                </f:facet>
-            </h:panelGrid>
-        </h:form>
+                </p:fieldset>
+            </p:dialog>
 
-        <h:form>
-            <h:panelGrid id = "panel" columns = "2" border = "1"
+            <p:dialog header="Editar Usuario" widgetVar="ouEditar" modal="true" showEffect="fade" hideEffect="fade" resizable="false" width="50%">
+                <p:fieldset>
+                    <h:panelGrid  id="ouEditar" style="position: relative;left: 15%;" columns="2" cellpadding="6">
+                        <p:outputLabel  value="Nombre:" />
+                        <p:inputText value="#{formView.view.nombre}" maxlength="25"/>
+                        <p:outputLabel  value="Apellido:" />
+                        <p:inputText  value="#{formView.view.apellido}" maxlength="25"/>
+                        <p:outputLabel   value="Contraseña:" />
+                        <p:inputText type="password" value="#{formView.view.contrasenia}" maxlength="25"/> 
+                        <p:commandButton id="btnGuardar" value="Guardar" action="#{formView.Editar}" update="tabla" oncomplete="PF('ouEditar').hide()"/>
+                        <p:commandButton id="btnCancelar" value="Cancelar" oncomplete="PF('ouEditar').hide()"/>                    
+                    </h:panelGrid>
+                </p:fieldset>  
+            </p:dialog>
+            
+            <p:dialog header="Eliminar Usuario" widgetVar="ouEliminar" modal="true" showEffect="fade" hideEffect="fade" resizable="false" width="50%">
+                <p:fieldset>
+                    <h:panelGrid id="ouEliminar"  columns="2">
+                        <p:outputLabel  value="Advertencia:" />
+                        <p:outputLabel  value="¿Está seguro de querer eliminar al usuario #{formView.view.usuario}?" />
+                    </h:panelGrid>
+                    <div style="text-align: center;">
+                        <p:commandButton id="eliminarSi" value="Aceptar" action="#{formView.eliminar()}" update="tabla" oncomplete="PF('ouEliminar').hide()"/>
+                        <p:commandButton id="eliminarNo" value="Cancelar" oncomplete="PF('ouEliminar').hide()"/>
+                    </div>
+                </p:fieldset>
+            </p:dialog>
+            
+            <p:separator />
+            <h:panelGrid id = "panelBuscar" columns = "2" border = "1"
                          cellpadding = "10" cellspacing = "1">
                 <f:facet name = "header">
                     <h:outputText value = "Buscar un usuario SIP"/>
@@ -48,54 +96,6 @@
                     </h:panelGroup>
                 </f:facet>
             </h:panelGrid>
-        </h:form>
-        <h:form>
-            <p:dataTable id="tabla" value="#{formView.buscarLdap()}" var="dato" selectionMode="single" selection="#{formView.view}" rowKey="#{dato.usuario}">
-                <p:column headerText="Nombre">
-                    <h:outputText value="#{dato.nombre}"></h:outputText>
-                </p:column>
-                <p:column headerText="Apellido">
-                    <h:outputText value="#{dato.apellido}"></h:outputText>
-                </p:column>
-                <p:column headerText="Usuario">
-                    <h:outputText value="#{dato.usuario}"></h:outputText>
-                </p:column>
-            </p:dataTable>
-            <p:commandButton process="tabla" value="Eliminar" update="ouEliminar" oncomplete="PF('ouEliminar').show()"/>
-            <p:commandButton process="tabla" value="Editar" update="ouEditar" oncomplete="PF('ouEditar').show()" />
-            <p:dialog header="Advertencia" widgetVar="ouEliminar" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
-                <p:outputPanel id="ouEliminar" style="text-align:center;" >
-                    <p:panelGrid columns="2" rendered="#{not empty formView.view}" columnClasses="label,value">
-                        <f:facet name="header">
-                            <p:outputLabel value="¿seguro eliminar al usuario #{formView.view.usuario}?"/>
-                        </f:facet>
-                        <p:commandButton id="eliminarSi" value="SI" action="#{formView.eliminar()}" update="tabla" oncomplete="PF('ouEliminar').hide()"/>
-                        <p:commandButton id="eliminarNo" value="NO" oncomplete="PF('ouEliminar').hide()"/>
-                    </p:panelGrid>
-                </p:outputPanel>
-            </p:dialog>
-            <p:dialog header="Editar Usuario" widgetVar="ouEditar" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
-                <p:outputPanel id="ouEditar" style="text-align:center; 
-                               border: none;
-                               ">
-                    <p:panelGrid id="panel" columns="3" layout="grid"  style="width: 775px; height: 300px">
-                        <p:outputLabel for="inNombre"  value="Nombre" />
-                        <p:inputText id="inNombre" value="#{formView.view.nombre}" maxlength="25"/>
-                        <p:message for="inNombre" />
-                        <p:outputLabel for="inApellido"  value="Apellido" />
-                        <p:inputText id="inApellido" value="#{formView.view.apellido}" maxlength="25"/>
-                        <p:message for="inApellido" />
-                        <p:outputLabel for="inPass"  value="Contraseña" />
-                        <p:inputText type="password" id="inPass" value="#{formView.view.contrasenia}" maxlength="25"/>
-                        <p:message for="inPass" />
-                        <f:facet name="header">
-                            <p:outputLabel value="Todos los datos son requeridos"/>
-                        </f:facet>
-                        <p:commandButton id="btnGuardar" value="Guardar" action="#{formView.Editar()}" update="tabla" oncomplete="PF('ouEditar').hide()"/>
-                        <p:commandButton id="btnCancelar" value="Cancelar" oncomplete="PF('ouEditar').hide()"/>
-                    </p:panelGrid>
-                </p:outputPanel>
-            </p:dialog>
         </h:form>
     </h:body>
 </html>
