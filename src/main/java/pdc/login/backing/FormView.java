@@ -52,14 +52,15 @@ public class FormView implements Serializable {
                 Logger.getLogger(this.getClass().getClass().getSimpleName()).log(Level.SEVERE, null, e);
             }
         }
+        view = new FormView();
     }
 
     //usuario de la conexión y su respectiva cookie
     private MyCookie myCookie;
     private Usuario user;
     //Variables del directorio LDAP, modificar dominio
-    //public static final String host = "yuca";
-    public static final String DIR_ROOT = "ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv";
+    public static final String hosti = "yuca";
+    public static final String DIR_ROOT = "ou=usuarios,dc="+hosti+",dc=occ,dc=ues,dc=edu,dc=sv";
     LdapConnection connection;
     //Variables del formulario con sus getter y setter
     private String usuario;
@@ -121,7 +122,7 @@ public class FormView implements Serializable {
     public void buscarUnoLdap() {
         if (!busqueda.isEmpty()) {
             try {
-                EntryCursor cursor = connection.search("ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=" + busqueda + ")", SearchScope.SUBTREE);
+                EntryCursor cursor = connection.search("ou=usuarios,dc="+hosti+",dc=occ,dc=ues,dc=edu,dc=sv", "(uid=" + busqueda + ")", SearchScope.SUBTREE);
                 System.out.println("IMPRIMIENDO RESULTADOS");
                 for (Entry entry : cursor) {
                     System.out.println(entry);
@@ -135,27 +136,27 @@ public class FormView implements Serializable {
     //método para devolver todos los  usuarios en el árbol LDAP
     public List<FormView> buscarLdap() {
         List<FormView> list = new ArrayList<>();
-        FormView view;
+        FormView view2;
         try {
-            EntryCursor cursor = connection.search("ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv", "(uid=*)", SearchScope.SUBTREE);
+            EntryCursor cursor = connection.search("ou=usuarios,dc="+hosti+",dc=occ,dc=ues,dc=edu,dc=sv", "(uid=*)", SearchScope.SUBTREE);
             //System.out.println("IMPRIMIENDO RESULTADOS");
             for (Entry entry : cursor) {
                 //System.out.println(entry.get("uid"));
-                view = new FormView();
+                view2 = new FormView();
                 if (cursor == null) {
-                    view.setNombre("sin datos");
-                    view.setApellido("sin datos");
-                    view.setUsuario("sin datos");
-                    list.add(view);
+                    view2.setNombre("sin datos");
+                    view2.setApellido("sin datos");
+                    view2.setUsuario("sin datos");
+                    list.add(view2);
                 } else {
-                    view.setNombre(entry.get("cn").getString());
-                    view.setApellido(entry.get("sn").getString());
-                    view.setUsuario(entry.get("uid").getString());
+                    view2.setNombre(entry.get("cn").getString());
+                    view2.setApellido(entry.get("sn").getString());
+                    view2.setUsuario(entry.get("uid").getString());
                     //view.setContrasenia(entry.get("AstAccountRealmedPassword").getString());
-                    view.setBusqueda(entry.get("uid").getString());
+                    view2.setBusqueda(entry.get("uid").getString());
                     //System.out.println("objeto");
                     //System.out.println(view.getNombre() + " " + view.getApellido() + " " + view.getUsuario());
-                    list.add(view);
+                    list.add(view2);
                 }
             }
         } catch (LdapException ex) {
@@ -234,20 +235,21 @@ public class FormView implements Serializable {
     public void eliminar() throws LdapException {
         //System.out.println("curso seleccionado "+ this.view.getNombre());
         if (!(this.view == null)) {
-            connection.delete("uid=" + this.view.getUsuario() + ",ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv");
+            connection.delete("uid=" + this.view.getUsuario() + ",ou=usuarios,dc="+hosti+",dc=occ,dc=ues,dc=edu,dc=sv");
         }
     }
 
     public void Editar() throws LdapException {
+        //System.out.println("Nombre 0.0 " + this.view.getNombre());
         if (!(this.view.getUsuario().isEmpty() && this.view.getNombre().isEmpty() && this.view.getApellido().isEmpty() && this.view.getContrasenia().isEmpty())) {
-            //System.out.println("Usuario 0.0 " + this.view.getUsuario());
+            
             //this.view.contrasenia = getHash(this.view.getUsuario() + ":asterisk:" + this.view.getContrasenia(), "MD5");
             Modification modiNombre = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "cn", this.view.getNombre());
             Modification modiApellido = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "sn", this.view.getApellido());
             Modification modiContrasenia = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "AstAccountRealmedPassword", this.view.getContrasenia());
             Modification modiID = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "AstAccountCallerID", this.view.getNombre() + " " + this.view.getApellido());
             
-            connection.modify("uid=" + this.view.getUsuario() + ",ou=usuarios,dc=nuegado,dc=occ,dc=ues,dc=edu,dc=sv",modiApellido,modiNombre,modiContrasenia,modiID);
+            connection.modify("uid=" + this.view.getUsuario() + ",ou=usuarios,dc="+hosti+",dc=occ,dc=ues,dc=edu,dc=sv",modiApellido,modiNombre,modiContrasenia,modiID);
         }
 
     }
