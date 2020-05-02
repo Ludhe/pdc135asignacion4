@@ -8,94 +8,84 @@
         <title>FORMULARIO</title>
     </h:head>
     <h:body>
-        <h2 style="text-align: center"><p:outputLabel value="Usuarios SIP"/></h2>
-        
-        <p:separator />
-        <br/>
-        <h:form id="form">
-            <p:dataTable id="tabla" value="#{formView.buscarLdap()}" var="dato" selectionMode="single" selection="#{formView.view}" rowKey="#{dato.usuario}" paginator="true" rows="5" paginatorPosition="bottom" >
-                <p:column headerText="Nombre">
-                    <h:outputText value="#{dato.nombre}"></h:outputText>
-                </p:column>
-                <p:column headerText="Apellido">
-                    <h:outputText value="#{dato.apellido}"></h:outputText>
-                </p:column>
-                <p:column headerText="Usuario">
-                    <h:outputText value="#{dato.usuario}"></h:outputText>
-                </p:column>
-            </p:dataTable>
+        <h:form id="formTabla">
+            <p:commandButton id = "logout" value = "Cerrar Sesión" actionListener="#{formView.logout}" style="float: right; position: fixed; right: 1%"/>
+            <div style="text-align: center">
+                <h2><p:outputLabel value="Usuarios SIP"/></h2>            
+            </div>        
+            <p:separator />
             <br/>
+
             <div>
                 <h4>Administrar:
-                <p:commandButton process="tabla" value="Agregar" update="ouAgregar" oncomplete="PF('ouAgregar').show()" />
-                <p:commandButton process="tabla" value="Editar" update="ouEditar" oncomplete="PF('ouEditar').show()" />
-                <p:commandButton process="tabla" value="Eliminar" update="ouEliminar" oncomplete="PF('ouEliminar').show()"/>
+                    <p:commandButton id="btnAceptar" value="Agregar" update="formAgregar" oncomplete="PF('ouAgregar').show()" />
+                    <p:commandButton id="btnEditar" value="Editar" update="formEditar" oncomplete="PF('ouEditar').show()" disabled="#{formView.selectedUsuario==null}"/>
+                    <p:commandButton id="btnEliminar" value="Eliminar" update="formEliminar, formTabla" disabled="#{formView.selectedUsuario==null}" actionListener="#{formView.eliminarLdap}">
+                        <p:confirm header="Confirmación" message="¿Está seguro de querer eliminar al usuario #{formView.selectedUsuario.uid}?" icon="pi pi-exclamation-triangle" />
+                    </p:commandButton>
                 </h4>
             </div>
-            <h4 style="text-align: right">Cerrar Sesión: 
-               <p:commandButton id = "submit" value = "Salir" actionListener="#{formView.logout}"/> 
-            </h4>            
-            
+            <p:dataTable id="tabla" value="#{formView.usuariosList}" var="usuario" selectionMode="single" selection="#{formView.selectedUsuario}" rowKey="#{usuario.uid}" paginator="true" rows="5" paginatorPosition="bottom" >
+                <p:ajax event="rowSelect" update="formTabla:btnEditar, formTabla:btnEliminar" />
+                <p:column headerText="Nombre">
+                    <h:outputText value="#{usuario.cn}"></h:outputText>
+                </p:column>
+                <p:column headerText="Apellido">
+                    <h:outputText value="#{usuario.sn}"></h:outputText>
+                </p:column>
+                <p:column headerText="Usuario">
+                    <h:outputText value="#{usuario.uid}"></h:outputText>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+
+
+        <!--Form para el dialog, AGREGAR usuario-->
+        <h:form id="formAgregar" >
             <p:dialog header="Agregar una nueva cuenta SIP" widgetVar="ouAgregar" modal="true" showEffect="fade" hideEffect="fade" resizable="false" width="50%">
                 <p:fieldset>
                     <h:panelGrid id="ouAgregar" style="position: relative;left: 15%;" columns="2" cellpadding="6">
                         <p:outputLabel  value="Usuario:" />
-                        <p:inputText value="#{formView.usuario}" maxlength="25"/>
+                        <p:inputText value="#{formView.tempUser.uid}" maxlength="25" required="true"/>
                         <p:outputLabel  value="Nombre:" />
-                        <p:inputText value="#{formView.nombre}" maxlength="25"/>
+                        <p:inputText value="#{formView.tempUser.cn}" maxlength="25" required="true"/>
                         <p:outputLabel  value="Apellido:" />
-                        <p:inputText value="#{formView.apellido}" maxlength="25"/>
+                        <p:inputText value="#{formView.tempUser.sn}" maxlength="25" required="true"/>
                         <p:outputLabel  value="Contraseña:" />
-                        <p:inputText type="password" value="#{formView.contrasenia}" maxlength="25"/>
-                        <p:commandButton id="Aceptar" value="Aceptar" actionListener="#{formView.crearLdap}" update="tabla" oncomplete="PF('ouAgregar').hide()"/>
+                        <p:inputText type="password" value="#{formView.tempUser.pass}" maxlength="25" required="true"/>
+                        <p:commandButton id="Aceptar" value="Aceptar" actionListener="#{formView.crearLdap}" update="formTabla"/>
                         <p:commandButton value="Cancelar" oncomplete="PF('ouAgregar').hide()"/> 
                     </h:panelGrid>
-
                 </p:fieldset>
             </p:dialog>
+        </h:form>
 
-            <p:dialog header="Editar Usuario" widgetVar="ouEditar" modal="true" showEffect="fade" hideEffect="fade" resizable="false" width="50%">
+        <!--Form para el dialog, EDITAR usuario-->
+        <h:form id="formEditar" >
+            <p:dialog header="Editar cuenta" widgetVar="ouEditar" modal="true" showEffect="fade" hideEffect="fade" resizable="false" width="50%">
                 <p:fieldset>
-                    <h:panelGrid  id="ouEditar" style="position: relative;left: 15%;" columns="2" cellpadding="6">
+                    <h:panelGrid id="ouEditar" style="position: relative;left: 15%;" columns="2" cellpadding="6">
+                        <p:outputLabel  value="Usuario:" />
+                        <p:outputLabel value="#{formView.selectedUsuario.uid}"/>
                         <p:outputLabel  value="Nombre:" />
-                        <p:inputText value="#{formView.view.nombre}" maxlength="25"/>
+                        <p:inputText value="#{formView.selectedUsuario.cn}" maxlength="25" required="true"/>
                         <p:outputLabel  value="Apellido:" />
-                        <p:inputText  value="#{formView.view.apellido}" maxlength="25"/>
-                        <p:outputLabel   value="Contraseña:" />
-                        <p:inputText type="password" value="#{formView.view.contrasenia}" maxlength="25"/> 
-                        <p:commandButton id="btnGuardar" value="Guardar" action="#{formView.Editar}" update="tabla" oncomplete="PF('ouEditar').hide()"/>
-                        <p:commandButton id="btnCancelar" value="Cancelar" oncomplete="PF('ouEditar').hide()"/>                    
+                        <p:inputText value="#{formView.selectedUsuario.sn}" maxlength="25" required="true"/>
+                        <p:outputLabel  value="Contraseña:" />
+                        <p:inputText type="password" value="#{formView.selectedUsuario.pass}" maxlength="25" required="true"/>
+                        <p:commandButton id="Aceptar" value="Aceptar" actionListener="#{formView.editarLdap}" update="ouEditar, formTabla" />
+                        <p:commandButton value="Cancelar" oncomplete="PF('ouEditar').hide()"/> 
                     </h:panelGrid>
-                </p:fieldset>  
-            </p:dialog>
-            
-            <p:dialog header="Eliminar Usuario" widgetVar="ouEliminar" modal="true" showEffect="fade" hideEffect="fade" resizable="false" width="50%">
-                <p:fieldset>
-                    <h:panelGrid id="ouEliminar"  columns="2">
-                        <p:outputLabel  value="Advertencia:" />
-                        <p:outputLabel  value="¿Está seguro de querer eliminar al usuario #{formView.view.usuario}?" />
-                    </h:panelGrid>
-                    <div style="text-align: center;">
-                        <p:commandButton id="eliminarSi" value="Aceptar" action="#{formView.eliminar()}" update="tabla" oncomplete="PF('ouEliminar').hide()"/>
-                        <p:commandButton id="eliminarNo" value="Cancelar" oncomplete="PF('ouEliminar').hide()"/>
-                    </div>
                 </p:fieldset>
             </p:dialog>
-            
-            <p:separator />
-            <h:panelGrid id = "panelBuscar" columns = "2" border = "1"
-                         cellpadding = "10" cellspacing = "1">
-                <f:facet name = "header">
-                    <h:outputText value = "Buscar un usuario SIP"/>
-                </f:facet>
-                <h:outputLabel value = "Usuario:" />
-                <h:inputText value = "#{formView.busqueda}" />
-                <f:facet name = "footer">
-                    <h:panelGroup style = "display:block; text-align:center">
-                        <h:commandButton id = "Buscar" value = "Buscar" actionListener="#{formView.buscarUnoLdap}"/>
-                    </h:panelGroup>
-                </f:facet>
-            </h:panelGrid>
+        </h:form>
+
+        <!--Form para el dialog, ELIMINAR usuario  widgetVar="ouEliminar"-->
+        <h:form id="formEliminar" >
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                <p:commandButton value="Aceptar" type="button" styleClass="ui-confirmdialog-yes" />
+                <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no" />
+            </p:confirmDialog>  
         </h:form>
     </h:body>
 </html>
