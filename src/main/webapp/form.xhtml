@@ -40,7 +40,7 @@
             <p:outputPanel style="text-align: center">
                 <h:outputText value="Buscar:" style="padding-right: 1%"/>
                 <p:inputText id="buscador" value="#{formView.busqueda}" style="width:50%; " placeholder="Escriba el usuario de una cuenta" maxlength="25">
-                    <p:keyFilter regEx="/[a-zA-ZñÑ]+/g"/>
+                    <p:keyFilter regEx="/[a-zA-ZñÑ]+/"/>
                     <p:ajax event="keyup" listener="#{formView.filterLdap}" update="tabla" />
                 </p:inputText>
             </p:outputPanel>
@@ -68,7 +68,7 @@
                     <h:panelGrid id="ouAgregar" style="position: relative;left: 20%;" columns="2" cellpadding="6">
                         <p:outputLabel  value="Usuario:" />
                         <p:inputText value="#{formView.tempUser.uid}" placeholder="Ingrese el usuario" maxlength="25" required="true" requiredMessage="Ingrese el usuario">
-                            <p:keyFilter regEx="/[a-zA-ZñÑ]+/g"/>
+                            <p:keyFilter regEx="/[a-zA-ZñÑ]+/"/>
                         </p:inputText>
                         <p:outputLabel  value="Nombre:" />
                         <p:inputText value="#{formView.tempUser.cn}" placeholder="Ingrese el nombre" maxlength="25" required="true" requiredMessage="Ingrese el nombre">
@@ -104,7 +104,7 @@
                 </p:fieldset>
                 <br/>
                 <p:commandButton style="position: relative;left: 35%;" value="Aceptar" oncomplete="PF('ouInfo').hide()"/> 
-
+                <br/>
             </p:dialog>
         </h:form>
 
