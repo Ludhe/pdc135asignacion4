@@ -1,7 +1,6 @@
 package pdc.login.entity;
 
 import java.io.Serializable;
-import org.apache.directory.ldap.client.api.LdapConnection;
 
 /**
  *
@@ -11,7 +10,6 @@ public class Usuario implements Serializable{
     
     private final String uid;
     private final String pass;
-    private LdapConnection connection;
 
     public Usuario(String uid, String pass) {
         this.uid = uid;

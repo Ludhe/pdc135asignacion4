@@ -8,6 +8,9 @@ package pdc.login.backing;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -27,6 +30,12 @@ import utils.Login;
 @ViewScoped
 public class LoginView implements Serializable {
 
+    private String usuario;
+    private String password;
+    private MyCookie myCookie;
+    Usuario user; //el usuario que se logge
+    int connectionStatus;
+
     @PostConstruct
     void init() {
         myCookie = new MyCookie();
@@ -34,12 +43,6 @@ public class LoginView implements Serializable {
             myCookie.redirect("/form.jsf");
         }
     }
-
-    private String usuario;
-    private String password;
-    private MyCookie myCookie;
-    Usuario user; //el usuario que se logge
-    int connectionStatus;
 
     public String getUsuario() {
         return usuario;
@@ -67,7 +70,7 @@ public class LoginView implements Serializable {
             connectionStatus = Login.checkLogin(user);
 
             switch (connectionStatus) {
-                case 1:                   
+                case 1:
                     String s = Serializacion.toString(user);
                     myCookie.setCookieValue("session", s);
                     myCookie.redirect("/form.jsf");
@@ -91,12 +94,13 @@ public class LoginView implements Serializable {
         try {
             ip = InetAddress.getLocalHost();
             hostname = ip.getHostName();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (UnknownHostException e) {
+            Logger.getLogger(this.getClass().getClass().getSimpleName()).log(Level.SEVERE, null, e);
         }
         return hostname;
     }
 
+    //Método para agregar agregar notificaciones
     public void addMessage(String summary, boolean isError) {
         FacesMessage message = new FacesMessage(isError ? FacesMessage.SEVERITY_ERROR : FacesMessage.SEVERITY_INFO, summary, null);
         FacesContext.getCurrentInstance().addMessage(null, message);

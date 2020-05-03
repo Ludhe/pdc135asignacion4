@@ -16,7 +16,6 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import org.apache.directory.api.ldap.model.cursor.CursorException;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.entry.DefaultModification;
@@ -82,8 +81,8 @@ public class FormView implements Serializable {
             myCookie.redirect("/index.jsf");
         }
 
-    }    
-    
+    }
+
     public LdapConnection getConnection() {
         return connection;
     }
@@ -124,7 +123,7 @@ public class FormView implements Serializable {
         this.usuariosList = usuariosList;
     }
 
-    //método para buscar en el árbol LDAP
+    //método para el buscador 
     public void filterLdap() {
 
         if (!busqueda.isEmpty()) {
@@ -168,7 +167,7 @@ public class FormView implements Serializable {
             tempUser.setPass(passMD5);
 
             StringBuilder builder = new StringBuilder();
-            builder.append("uid=" + tempUser.getUid() + "," + DIR_ROOT);
+            builder.append("uid=").append(tempUser.getUid()).append("," + DIR_ROOT);
             String dnInsertar = builder.toString();
 
             try {
@@ -267,7 +266,7 @@ public class FormView implements Serializable {
             java.security.MessageDigest md = java.security.MessageDigest
                     .getInstance(hashType);
             byte[] array = md.digest(txt.getBytes());
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < array.length; ++i) {
                 sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100)
                         .substring(1, 3));
@@ -279,6 +278,7 @@ public class FormView implements Serializable {
         return null;
     }
 
+    //Método para agregar los mensajes a las notificaciones 
     public void addMessage(String summary, boolean isError) {
         FacesMessage message = new FacesMessage(isError ? FacesMessage.SEVERITY_ERROR : FacesMessage.SEVERITY_INFO, summary, null);
         FacesContext.getCurrentInstance().addMessage(null, message);

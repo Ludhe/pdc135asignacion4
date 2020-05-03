@@ -22,10 +22,11 @@
                     <h1> Iniciar sesión</h1>
                     <h:outputLabel id="hostame" value = "Hostname ID:  #{loginView.hostname}" />
                     <br/><br/>
-                    <p:inputText id="usuario" class="texto"  placeholder="Usuario" value="#{loginView.usuario}" required="true" requiredMessage="Ingrese un usuario"/>
-                    <p:keyFilter for="usuario" regEx="[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s]+"/>  
+                    <p:inputText id="usuario" class="texto"  placeholder="Usuario" value="#{loginView.usuario}" required="true" requiredMessage="Ingrese un usuario" maxlength="25">
+                        <p:keyFilter regEx="/[a-zA-ZñÑ]+/"/>  
+                    </p:inputText>                   
                     <br/>
-                    <p:password id="contra" class="texto" value="#{loginView.password}" placeholder="Contraseña" required="true" requiredMessage="Ingrese la constraseña"/>
+                    <p:password id="contra" class="texto" value="#{loginView.password}" placeholder="Contraseña" required="true" requiredMessage="Ingrese la constraseña" maxlength="25"/>
                     <br/><br/>
                     <p:commandButton id = "submit" value = "Iniciar" update="loginForm" actionListener="#{loginView.login}"/>
                 </h:form>
