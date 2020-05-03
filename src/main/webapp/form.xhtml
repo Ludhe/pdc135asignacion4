@@ -6,26 +6,45 @@
       xmlns:p="http://primefaces.org/ui">
     <h:head>
         <title>FORMULARIO</title>
-    </h:head>
+    </h:head>   
     <h:body>
-        <h:form id="formTabla">
+        <h:form>
+            <p:remoteCommand name="onload" action="#{formView.onload}" autoRun="true" update="formTabla"/> 
+        </h:form>       
+        <!--Form para la TABLA y cerrar sesión-->
+        
+        <h:form id="formTabla"> 
+            <p:growl id="growl" showDetail="true" sticky="true" />
+                       
             <p:commandButton id = "logout" value = "Cerrar Sesión" actionListener="#{formView.logout}" style="float: right; position: fixed; right: 1%"/>
             <div style="text-align: center">
                 <h2><p:outputLabel value="Usuarios SIP"/></h2>            
             </div>        
             <p:separator />
-            <br/>
 
             <div>
                 <h4>Administrar:
-                    <p:commandButton id="btnAceptar" value="Agregar" update="formAgregar" oncomplete="PF('ouAgregar').show()" />
+                    <p:commandButton id="btnAceptar" value="Agregar" update="formAgregar" oncomplete="PF('ouAgregar').show()" disabled="#{!formView.connection.connected}"/>
                     <p:commandButton id="btnEditar" value="Editar" update="formEditar" oncomplete="PF('ouEditar').show()" disabled="#{formView.selectedUsuario==null}"/>
                     <p:commandButton id="btnEliminar" value="Eliminar" update="formEliminar, formTabla" disabled="#{formView.selectedUsuario==null}" actionListener="#{formView.eliminarLdap}">
                         <p:confirm header="Confirmación" message="¿Está seguro de querer eliminar al usuario #{formView.selectedUsuario.uid}?" icon="pi pi-exclamation-triangle" />
                     </p:commandButton>
                 </h4>
             </div>
-            <p:dataTable id="tabla" value="#{formView.usuariosList}" var="usuario" selectionMode="single" selection="#{formView.selectedUsuario}" rowKey="#{usuario.uid}" paginator="true" rows="5" paginatorPosition="bottom" >
+            <p:separator />
+            <br/>
+            <p:outputPanel style="text-align: center">
+                <h:outputText value="Buscar:" style="padding-right: 1%"/>
+                <p:inputText id="buscador" value="#{formView.busqueda}" style="width:50%; " placeholder="Escriba el usuario de una cuenta">
+                    <p:ajax event="keyup" listener="#{formView.filterLdap}" update="tabla" />
+                </p:inputText>
+            </p:outputPanel>
+            <br/>
+            <p:dataTable widgetVar="tabla" id="tabla" value="#{formView.usuariosList}" var="usuario" selectionMode="single" selection="#{formView.selectedUsuario}" rowKey="#{usuario.uid}" paginator="true" rows="5" paginatorPosition="bottom"
+                         emptyMessage="#{(formView.usuariosList == null)?'Cargando...':'No se encontró ningún usuario.'}">
+                <f:facet name="header">
+
+                </f:facet>
                 <p:ajax event="rowSelect" update="formTabla:btnEditar, formTabla:btnEliminar" />
                 <p:column headerText="Nombre">
                     <h:outputText value="#{usuario.cn}"></h:outputText>
@@ -46,13 +65,13 @@
                 <p:fieldset>
                     <h:panelGrid id="ouAgregar" style="position: relative;left: 15%;" columns="2" cellpadding="6">
                         <p:outputLabel  value="Usuario:" />
-                        <p:inputText value="#{formView.tempUser.uid}" maxlength="25" required="true"/>
+                        <p:inputText value="#{formView.tempUser.uid}" maxlength="25" required="true" requiredMessage="Ingrese usuario"/>
                         <p:outputLabel  value="Nombre:" />
-                        <p:inputText value="#{formView.tempUser.cn}" maxlength="25" required="true"/>
+                        <p:inputText value="#{formView.tempUser.cn}" maxlength="25" required="true" requiredMessage="Ingrese el nombre"/>
                         <p:outputLabel  value="Apellido:" />
-                        <p:inputText value="#{formView.tempUser.sn}" maxlength="25" required="true"/>
+                        <p:inputText value="#{formView.tempUser.sn}" maxlength="25" required="true" requiredMessage="Ingrese el apellido"/>
                         <p:outputLabel  value="Contraseña:" />
-                        <p:inputText type="password" value="#{formView.tempUser.pass}" maxlength="25" required="true"/>
+                        <p:inputText type="password" value="#{formView.tempUser.pass}" maxlength="25" required="true" requiredMessage="Ingrese la contraseña"/>
                         <p:commandButton id="Aceptar" value="Aceptar" actionListener="#{formView.crearLdap}" update="formTabla"/>
                         <p:commandButton value="Cancelar" oncomplete="PF('ouAgregar').hide()"/> 
                     </h:panelGrid>
@@ -68,11 +87,11 @@
                         <p:outputLabel  value="Usuario:" />
                         <p:outputLabel value="#{formView.selectedUsuario.uid}"/>
                         <p:outputLabel  value="Nombre:" />
-                        <p:inputText value="#{formView.selectedUsuario.cn}" maxlength="25" required="true"/>
+                        <p:inputText value="#{formView.selectedUsuario.cn}" maxlength="25" required="true" requiredMessage="No puede dejar en blanco el nombre"/>
                         <p:outputLabel  value="Apellido:" />
-                        <p:inputText value="#{formView.selectedUsuario.sn}" maxlength="25" required="true"/>
+                        <p:inputText value="#{formView.selectedUsuario.sn}" maxlength="25" required="true" requiredMessage="No puede dejar en blanco el apellido"/>
                         <p:outputLabel  value="Contraseña:" />
-                        <p:inputText type="password" value="#{formView.selectedUsuario.pass}" maxlength="25" required="true"/>
+                        <p:inputText type="password" value="#{formView.selectedUsuario.pass}" maxlength="25" required="true" requiredMessage="No puede dejar en blanco la contraseña"/>
                         <p:commandButton id="Aceptar" value="Aceptar" actionListener="#{formView.editarLdap}" update="ouEditar, formTabla" />
                         <p:commandButton value="Cancelar" oncomplete="PF('ouEditar').hide()"/> 
                     </h:panelGrid>
