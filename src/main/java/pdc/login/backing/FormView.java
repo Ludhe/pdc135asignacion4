@@ -46,7 +46,7 @@ public class FormView implements Serializable {
     private MyCookie myCookie;
     private Usuario user;
     //Variables del directorio LDAP, modificar dominio
-    public static final String DOMAIN = "nuegado";
+    public static final String DOMAIN = "tipicos";
     public static final String DIR_ROOT = "ou=usuarios,dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
     private LdapConnection connection;
     //Variables del formulario 

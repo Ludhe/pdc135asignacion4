@@ -32,8 +32,8 @@ public class Login {
         LdapConnection connection;
         Dn dn;
         final String USER;
-        final String DOMAIN = "nuegado";
-        connectionConfig.setLdapHost("192.168.122.195");
+        final String DOMAIN = "tipicos";
+        connectionConfig.setLdapHost("ldap://ldap.tipicos.occ.ues.edu.sv");
         connectionConfig.setLdapPort(389);
         USER = "cn=" + usuario.getUid() + ",dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
         try {
@@ -57,8 +57,8 @@ public class Login {
         LdapConnection connection;
         Dn dn;
         final String USER;
-        final String DOMAIN = "nuegado";
-        connectionConfig.setLdapHost("192.168.122.195");
+        final String DOMAIN = "tipicos";
+        connectionConfig.setLdapHost("ldap://ldap.tipicos.occ.ues.edu.sv");
         connectionConfig.setLdapPort(389);
         USER = "cn=" + usuario.getUid() + ",dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
         try {
