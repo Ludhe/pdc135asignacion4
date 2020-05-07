@@ -129,7 +129,7 @@ public class FormView implements Serializable {
         if (!busqueda.isEmpty()) {
 
             try {
-                EntryCursor cursor = connection.search(DIR_ROOT, "(uid=" + busqueda + "*)", SearchScope.SUBTREE);
+                EntryCursor cursor = connection.search(DIR_ROOT, "(&(objectClass=AsteriskSIPUser)(uid=" + busqueda + "*))", SearchScope.SUBTREE);
                 usuariosList = new ArrayList<>();
                 for (Entry entry : cursor) {
                     Usuarioldap userCursor = new Usuarioldap(entry.get("uid").getString(), entry.get("sn").getString(), entry.get("cn").getString(), null, entry.get("AstAccountCallerID").getString());
@@ -148,7 +148,7 @@ public class FormView implements Serializable {
     public List<Usuarioldap> getLdapUsers() {
         List<Usuarioldap> list = new ArrayList<>();
         try {
-            EntryCursor cursor = connection.search(DIR_ROOT, "(uid=*)", SearchScope.SUBTREE);
+            EntryCursor cursor = connection.search(DIR_ROOT, "(objectClass=AsteriskSIPUser)", SearchScope.SUBTREE);
             for (Entry entry : cursor) {
                 Usuarioldap userCursor = new Usuarioldap(entry.get("uid").getString(), entry.get("sn").getString(), entry.get("cn").getString(), null, entry.get("AstAccountCallerID").getString());
                 list.add(userCursor);
@@ -176,9 +176,7 @@ public class FormView implements Serializable {
                                 dnInsertar, // The Dn
                                 "objectClass: inetOrgPerson",
                                 "objectClass: AsteriskSIPUser",
-                                "objectClass: AsteriskIAXUser",
                                 "objectClass: organizationalPerson",
-                                "objectClass: AsteriskExtension",
                                 "objectClass: person",
                                 "objectClass: top",
                                 "AstAccountCallerID", tempUser.getCn() + " " + tempUser.getSn(),
