@@ -27,15 +27,15 @@ public class Login {
     }
 
     //Método para realizar la conexión con la base de datos
-    public static LdapConnection tryLogin(Usuario usuario) {
+    public static LdapConnection tryLogin(Usuario usuario, String server, int puerto) throws LdapException {
         LdapConnectionConfig connectionConfig = new LdapConnectionConfig();
         LdapConnection connection;
         Dn dn;
         final String USER;
         final String DOMAIN = "tipicos";
-        //ldap://ldap.tipicos.occ.ues.edu.sv
-        connectionConfig.setLdapHost("ldap://ldap.tipicos.occ.ues.edu.sv");
-        connectionConfig.setLdapPort(389);
+        //ldap://ldap.tipicos.occ.ues.edu.sv        
+        connectionConfig.setLdapHost("ldap://"+server);
+        connectionConfig.setLdapPort(puerto);
         USER = "cn=" + usuario.getUid() + ",dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
         try {
             dn = new Dn(USER);
@@ -44,10 +44,11 @@ public class Login {
             connection.bind(dn, usuario.getPass());
         } catch (LdapException ex) {
             Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+            throw ex;
         }
         return connection;
     }
+    
 
     //Método para validar a la hora de hacer el login
     //1: todo ok
