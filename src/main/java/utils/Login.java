@@ -61,7 +61,7 @@ public class Login {
         final String USER;
         final String DOMAIN = "tipicos";
         connectionConfig.setLdapHost("ldap://balanced");
-        connectionConfig.setLdapPort(389);
+        connectionConfig.setLdapPort(390);
         USER = "cn=" + usuario.getUid() + ",dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
         try {
             dn = new Dn(USER);
