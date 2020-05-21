@@ -7,6 +7,8 @@ package pdc.login.backing;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -82,7 +84,7 @@ public class FormView implements Serializable {
             myCookie.redirect("/index.jsf");
         }
         try {
-            connection = Login.tryLogin(user, "balanced", 390);
+            connection = Login.tryLogin(user, 390);
             usuariosList = getLdapUsers();
         } catch (LdapException e) {
             addMessage("Se perdió conexión con el árbol de LDAP", true);
@@ -90,7 +92,7 @@ public class FormView implements Serializable {
             myCookie.redirect("/index.jsf");
         }
         try {
-            masterConnection = Login.tryLogin(user, "master", 389);
+            masterConnection = Login.tryLogin(user, 389);
         } catch (LdapException e) {
             System.out.println("Error al conectarse con ldap maestro");
             Logger.getLogger(this.getClass().getClass().getSimpleName()).log(Level.SEVERE, null, e);
@@ -316,5 +318,18 @@ public class FormView implements Serializable {
     public void addMessage(String summary, boolean isError) {
         FacesMessage message = new FacesMessage(isError ? FacesMessage.SEVERITY_ERROR : FacesMessage.SEVERITY_INFO, summary, null);
         FacesContext.getCurrentInstance().addMessage(null, message);
+    }
+    
+    //Para mostrar en qué hostname está conectado
+    public String getHostname() {
+        InetAddress ip;
+        String hostname = "";
+        try {
+            ip = InetAddress.getLocalHost();
+            hostname = ip.getHostName();
+        } catch (UnknownHostException e) {
+            Logger.getLogger(this.getClass().getClass().getSimpleName()).log(Level.SEVERE, null, e);
+        }
+        return hostname;
     }
 }

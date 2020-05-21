@@ -20,7 +20,8 @@
             <p:commandButton id = "logout" value = "Cerrar Sesión" actionListener="#{formView.logout}" style="float: right; position: fixed; right: 1%"/>
 
             <div style="text-align: center">
-                <h2><p:outputLabel value="Usuarios SIP"/></h2>            
+                <h2><p:outputLabel value="Usuarios SIP"/></h2>
+                <h:outputLabel id="hostame" value = "Hostname ID:  #{formView.hostname}" />
             </div>        
             <p:separator />
 
