@@ -33,7 +33,7 @@ public class Login {
         Dn dn;
         final String USER;
         final String DOMAIN = "tipicos";      
-        connectionConfig.setLdapHost("ldap://25.16.250.146");
+        connectionConfig.setLdapHost("25.16.250.146");
         connectionConfig.setLdapPort(puerto);
         USER = "cn=" + usuario.getUid() + ",dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
         try {
