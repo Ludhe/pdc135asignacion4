@@ -83,6 +83,7 @@ public class FormView implements Serializable {
             myCookie.removeCookie("session");
             myCookie.redirect("/index.jsf");
         }
+        
         try {
             connection = Login.tryLogin(user, 390);
             usuariosList = getLdapUsers();
@@ -91,6 +92,7 @@ public class FormView implements Serializable {
             myCookie.removeCookie("session");
             myCookie.redirect("/index.jsf");
         }
+        
         try {
             masterConnection = Login.tryLogin(user, 389);
         } catch (LdapException e) {
@@ -151,8 +153,7 @@ public class FormView implements Serializable {
     public void filterLdap() {
 
         if (!busqueda.isEmpty()) {
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+connection.isConnected());
-            if (connection.isConnected()) {
+//            if (connection.isConnected()) {
                 try {
                     EntryCursor cursor = connection.search(DIR_ROOT, "(&(objectClass=AsteriskSIPUser)(uid=" + busqueda + "*))", SearchScope.SUBTREE);
                     usuariosList = new ArrayList<>();
@@ -163,10 +164,10 @@ public class FormView implements Serializable {
                 } catch (LdapException ex) {
                     Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            } else {
-                addMessage("Se perdió conexión con el árbol de LDAP", true);
-                usuariosList = getLdapUsers();
-            }
+//            } else {
+//                addMessage("Se perdió conexión con el árbol de LDAP", true);
+//                usuariosList = getLdapUsers();
+//            }
         }
     }
 
@@ -188,8 +189,7 @@ public class FormView implements Serializable {
     //método para crear un usuario en el árbol LDAP
     public void crearLdap() {
         if (tempUser.isValid() && tempUser != null) {
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+connection.isConnected());
-            if (masterConnection.isConnected()) {
+//            if (masterConnection.isConnected()) {
                 //encriptar contraseña
                 String passMD5 = getHash(tempUser.getUid() + ":asterisk:" + tempUser.getPass(), "MD5");
                 tempUser.setPass(passMD5);
@@ -229,17 +229,16 @@ public class FormView implements Serializable {
                     }
                 }
 
-            } else {
-                addMessage("En ese momento el servidor no está disponible para crear usuarios", true);
-            }
+//            } else {
+//                addMessage("En ese momento el servidor no está disponible para crear usuarios", true);
+//            }
         }
     }
 
     //Método para editar el usuario seleccionado
     public void editarLdap() {
         if (selectedUsuario.isValid() && selectedUsuario != null) {
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+connection.isConnected());
-            if (masterConnection.isConnected()) {
+//            if (masterConnection.isConnected()) {
                 try {
                     Dn dn = new Dn("uid=" + selectedUsuario.getUid() + "," + DIR_ROOT);
                     String passMD5 = getHash(selectedUsuario.getUid() + ":asterisk:" + selectedUsuario.getPass(), "MD5");
@@ -258,17 +257,16 @@ public class FormView implements Serializable {
                     Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
                     addMessage("Ocurrió un error con el servidor al tratar de editar el usuario", true);
                 }
-            } else {
-                addMessage("En ese momento el servidor no está disponible para editar usuarios", true);
-            }
+//            } else {
+//                addMessage("En ese momento el servidor no está disponible para editar usuarios", true);
+//            }
         }
     }
 
     //Método para eliminar el usuario que está seleccionado
     public void eliminarLdap() {
         if (!selectedUsuario.getUid().isEmpty() && selectedUsuario != null) {
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+connection.isConnected());
-            if (masterConnection.isConnected()) {
+//            if (masterConnection.isConnected()) {
                 try {
                     masterConnection.delete("uid=" + selectedUsuario.getUid() + "," + DIR_ROOT);
                     usuariosList = getLdapUsers();
@@ -278,9 +276,9 @@ public class FormView implements Serializable {
                     Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
                     addMessage("Ocurrió un error con el servidor al tratar de eliminar el usuario", true);
                 }
-            } else {
-                addMessage("En ese momento el servidor no está disponible para eliminar usuarios", true);
-            }
+//            } else {
+//                addMessage("En ese momento el servidor no está disponible para eliminar usuarios", true);
+//            }
         }
     }
 
