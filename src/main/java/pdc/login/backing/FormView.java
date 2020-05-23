@@ -75,6 +75,7 @@ public class FormView implements Serializable {
     }
 
     public void makeConnection(String cookieValue) {
+
         try {
             user = (Usuario) Serializacion.fromString(cookieValue);
 
@@ -83,7 +84,7 @@ public class FormView implements Serializable {
             myCookie.removeCookie("session");
             myCookie.redirect("/index.jsf");
         }
-        
+
         try {
             connection = Login.tryLogin(user, 390);
             usuariosList = getLdapUsers();
@@ -92,7 +93,18 @@ public class FormView implements Serializable {
             myCookie.removeCookie("session");
             myCookie.redirect("/index.jsf");
         }
-        
+
+    }
+
+    public void makeMasterConnection(String cookieValue) {
+        try {
+            user = (Usuario) Serializacion.fromString(cookieValue);
+
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.getLogger(this.getClass().getClass().getSimpleName()).log(Level.SEVERE, null, e);
+            myCookie.removeCookie("session");
+            myCookie.redirect("/index.jsf");
+        }
         try {
             masterConnection = Login.tryLogin(user, 389);
         } catch (LdapException e) {
@@ -153,17 +165,18 @@ public class FormView implements Serializable {
     public void filterLdap() {
 
         if (!busqueda.isEmpty()) {
+
 //            if (connection.isConnected()) {
-                try {
-                    EntryCursor cursor = connection.search(DIR_ROOT, "(&(objectClass=AsteriskSIPUser)(uid=" + busqueda + "*))", SearchScope.SUBTREE);
-                    usuariosList = new ArrayList<>();
-                    for (Entry entry : cursor) {
-                        Usuarioldap userCursor = new Usuarioldap(entry.get("uid").getString(), entry.get("sn").getString(), entry.get("cn").getString(), null, entry.get("AstAccountCallerID").getString());
-                        usuariosList.add(userCursor);
-                    }
-                } catch (LdapException ex) {
-                    Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                EntryCursor cursor = connection.search(DIR_ROOT, "(&(objectClass=AsteriskSIPUser)(uid=" + busqueda + "*))", SearchScope.SUBTREE);
+                usuariosList = new ArrayList<>();
+                for (Entry entry : cursor) {
+                    Usuarioldap userCursor = new Usuarioldap(entry.get("uid").getString(), entry.get("sn").getString(), entry.get("cn").getString(), null, entry.get("AstAccountCallerID").getString());
+                    usuariosList.add(userCursor);
                 }
+            } catch (LdapException ex) {
+                Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
+            }
 //            } else {
 //                addMessage("Se perdió conexión con el árbol de LDAP", true);
 //                usuariosList = getLdapUsers();
@@ -190,44 +203,54 @@ public class FormView implements Serializable {
     public void crearLdap() {
         if (tempUser.isValid() && tempUser != null) {
 //            if (masterConnection.isConnected()) {
-                //encriptar contraseña
-                String passMD5 = getHash(tempUser.getUid() + ":asterisk:" + tempUser.getPass(), "MD5");
-                tempUser.setPass(passMD5);
+            //encriptar contraseña
+            String passMD5 = getHash(tempUser.getUid() + ":asterisk:" + tempUser.getPass(), "MD5");
+            tempUser.setPass(passMD5);
 
-                StringBuilder builder = new StringBuilder();
-                builder.append("uid=").append(tempUser.getUid()).append("," + DIR_ROOT);
-                String dnInsertar = builder.toString();
-
-                try {
-                    masterConnection.add(
-                            new DefaultEntry(
-                                    dnInsertar, // The Dn
-                                    "objectClass: inetOrgPerson",
-                                    "objectClass: AsteriskSIPUser",
-                                    "objectClass: organizationalPerson",
-                                    "objectClass: person",
-                                    "objectClass: top",
-                                    "AstAccountCallerID", tempUser.getCn() + " " + tempUser.getSn(),
-                                    "cn", tempUser.getCn(),
-                                    "sn", tempUser.getSn(),
-                                    "uid", tempUser.getUid(),
-                                    "AstAccountRealmedPassword", passMD5,
-                                    "AstAccountType: friend",
-                                    "AstAccountHost: dynamic"
-                            ));
-                    usuariosList = getLdapUsers();
-                    tempUser = new Usuarioldap();
-                    PrimeFaces current = PrimeFaces.current();
-                    current.executeScript("PF('ouAgregar').hide();");
-                    addMessage("Se creó el nuevo usuario", false);
-                } catch (LdapException ex) {
-                    Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
-                    if (ex.getClass() == LdapEntryAlreadyExistsException.class) {
-                        addMessage("El usuario ya existe dentro de la base de datos", true);
-                    } else {
-                        addMessage("Ocurrió un error con el servidor al tratar de crear el usuario", true);
-                    }
+            StringBuilder builder = new StringBuilder();
+            builder.append("uid=").append(tempUser.getUid()).append("," + DIR_ROOT);
+            String dnInsertar = builder.toString();
+            String s = myCookie.getCookieValue("session");
+            makeMasterConnection(s);
+            try {
+                masterConnection.add(
+                        new DefaultEntry(
+                                dnInsertar, // The Dn
+                                "objectClass: inetOrgPerson",
+                                "objectClass: AsteriskSIPUser",
+                                "objectClass: organizationalPerson",
+                                "objectClass: person",
+                                "objectClass: top",
+                                "AstAccountCallerID", tempUser.getCn() + " " + tempUser.getSn(),
+                                "cn", tempUser.getCn(),
+                                "sn", tempUser.getSn(),
+                                "uid", tempUser.getUid(),
+                                "AstAccountRealmedPassword", passMD5,
+                                "AstAccountType: friend",
+                                "AstAccountHost: dynamic"
+                        ));
+                usuariosList = getLdapUsers();
+                tempUser = new Usuarioldap();
+                PrimeFaces current = PrimeFaces.current();
+                current.executeScript("PF('ouAgregar').hide();");
+                addMessage("Se creó el nuevo usuario", false);
+            } catch (LdapException ex) {
+                Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
+                if (ex.getClass() == LdapEntryAlreadyExistsException.class) {
+                    addMessage("El usuario ya existe dentro de la base de datos", true);
+                } else {
+                    addMessage("Ocurrió un error con el servidor al tratar de crear el usuario", true);
                 }
+            } finally {
+                try {
+                    if (masterConnection != null) {
+                        masterConnection.unBind();
+                        masterConnection.close();
+                    }
+                } catch (LdapException | IOException ex) {
+                    Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
 
 //            } else {
 //                addMessage("En ese momento el servidor no está disponible para crear usuarios", true);
@@ -239,24 +262,24 @@ public class FormView implements Serializable {
     public void editarLdap() {
         if (selectedUsuario.isValid() && selectedUsuario != null) {
 //            if (masterConnection.isConnected()) {
-                try {
-                    Dn dn = new Dn("uid=" + selectedUsuario.getUid() + "," + DIR_ROOT);
-                    String passMD5 = getHash(selectedUsuario.getUid() + ":asterisk:" + selectedUsuario.getPass(), "MD5");
-                    selectedUsuario.setPass(passMD5);
-                    Modification modCN = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "cn", selectedUsuario.getCn());
-                    Modification modSN = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "sn", selectedUsuario.getSn());
-                    Modification modPass = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "AstAccountRealmedPassword", selectedUsuario.getPass());
-                    Modification modCallerID = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "AstAccountCallerID", selectedUsuario.getCn() + " " + selectedUsuario.getSn());
+            try {
+                Dn dn = new Dn("uid=" + selectedUsuario.getUid() + "," + DIR_ROOT);
+                String passMD5 = getHash(selectedUsuario.getUid() + ":asterisk:" + selectedUsuario.getPass(), "MD5");
+                selectedUsuario.setPass(passMD5);
+                Modification modCN = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "cn", selectedUsuario.getCn());
+                Modification modSN = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "sn", selectedUsuario.getSn());
+                Modification modPass = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "AstAccountRealmedPassword", selectedUsuario.getPass());
+                Modification modCallerID = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, "AstAccountCallerID", selectedUsuario.getCn() + " " + selectedUsuario.getSn());
 
-                    masterConnection.modify(dn, modCN, modSN, modPass, modCallerID);
-                    usuariosList = getLdapUsers();
-                    PrimeFaces current = PrimeFaces.current();
-                    current.executeScript("PF('ouEditar').hide();");
-                    addMessage("Se editó el usuario", false);
-                } catch (LdapException ex) {
-                    Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
-                    addMessage("Ocurrió un error con el servidor al tratar de editar el usuario", true);
-                }
+                masterConnection.modify(dn, modCN, modSN, modPass, modCallerID);
+                usuariosList = getLdapUsers();
+                PrimeFaces current = PrimeFaces.current();
+                current.executeScript("PF('ouEditar').hide();");
+                addMessage("Se editó el usuario", false);
+            } catch (LdapException ex) {
+                Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
+                addMessage("Ocurrió un error con el servidor al tratar de editar el usuario", true);
+            }
 //            } else {
 //                addMessage("En ese momento el servidor no está disponible para editar usuarios", true);
 //            }
@@ -267,15 +290,15 @@ public class FormView implements Serializable {
     public void eliminarLdap() {
         if (!selectedUsuario.getUid().isEmpty() && selectedUsuario != null) {
 //            if (masterConnection.isConnected()) {
-                try {
-                    masterConnection.delete("uid=" + selectedUsuario.getUid() + "," + DIR_ROOT);
-                    usuariosList = getLdapUsers();
-                    selectedUsuario = null;
-                    addMessage("Se eliminó el usuario", false);
-                } catch (LdapException ex) {
-                    Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
-                    addMessage("Ocurrió un error con el servidor al tratar de eliminar el usuario", true);
-                }
+            try {
+                masterConnection.delete("uid=" + selectedUsuario.getUid() + "," + DIR_ROOT);
+                usuariosList = getLdapUsers();
+                selectedUsuario = null;
+                addMessage("Se eliminó el usuario", false);
+            } catch (LdapException ex) {
+                Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
+                addMessage("Ocurrió un error con el servidor al tratar de eliminar el usuario", true);
+            }
 //            } else {
 //                addMessage("En ese momento el servidor no está disponible para eliminar usuarios", true);
 //            }
@@ -321,7 +344,7 @@ public class FormView implements Serializable {
         FacesMessage message = new FacesMessage(isError ? FacesMessage.SEVERITY_ERROR : FacesMessage.SEVERITY_INFO, summary, null);
         FacesContext.getCurrentInstance().addMessage(null, message);
     }
-    
+
     //Para mostrar en qué hostname está conectado
     public String getHostname() {
         InetAddress ip;
