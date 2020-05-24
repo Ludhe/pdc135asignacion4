@@ -27,7 +27,7 @@
 
             <div>
                 <h4>Administrar:
-                    <p:commandButton id="btnAceptar" value="Agregar" update="formAgregar" oncomplete="PF('ouAgregar').show()" disabled="#{!formView.connection.connected}"/>
+                    <p:commandButton id="btnAceptar" value="Agregar" update="formAgregar" oncomplete="PF('ouAgregar').show()"/>
                     <p:commandButton id="btnInfo" value="Información" update="formInfo" oncomplete="PF('ouInfo').show()" disabled="#{formView.selectedUsuario==null}"/>
                     <p:commandButton id="btnEditar" value="Editar" update="formEditar" oncomplete="PF('ouEditar').show()" disabled="#{formView.selectedUsuario==null}"/>
                     <p:commandButton id="btnEliminar" value="Eliminar" update="formEliminar, formTabla" disabled="#{formView.selectedUsuario==null}" actionListener="#{formView.eliminarLdap}">
