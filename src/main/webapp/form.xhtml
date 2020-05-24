@@ -47,7 +47,7 @@
             </p:outputPanel-->
             <br/>
 
-            <p:dataTable widgetVar="tabla" id="tabla" value="#{formView.usuariosList}" var="usuario" selectionMode="single" selection="#{formView.selectedUsuario}" rowKey="#{usuario.uid}" paginator="true" rows="5" paginatorPosition="bottom"
+            <p:dataTable widgetVar="tabla" id="tabla" value="#{formView.usuariosList}" var="usuario" selectionMode="single" selection="#{formView.selectedUsuario}" rowKey="#{usuario.uid}" paginator="true" rows="10" paginatorPosition="bottom"
                          emptyMessage="#{(formView.usuariosList == null)?'Cargando...':'No se encontró ningún usuario.'}">
                 <!--p:ajax event="rowSelect" update="formTabla:btnEditar, formTabla:btnEliminar, formTabla:btnInfo"/-->
                 <p:column headerText="Nombre">
