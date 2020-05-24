@@ -88,17 +88,17 @@ public class LoginView implements Serializable {
     }
 
     //Para mostrar en qué hostname está conectado
-    public String getHostname() {
-        InetAddress ip;
-        String hostname = "";
-        try {
-            ip = InetAddress.getLocalHost();
-            hostname = ip.getHostName();
-        } catch (UnknownHostException e) {
-            Logger.getLogger(this.getClass().getClass().getSimpleName()).log(Level.SEVERE, null, e);
-        }
-        return hostname;
-    }
+//    public String getHostname() {
+//        InetAddress ip;
+//        String hostname = "";
+//        try {
+//            ip = InetAddress.getLocalHost();
+//            hostname = ip.getHostName();
+//        } catch (UnknownHostException e) {
+//            Logger.getLogger(this.getClass().getClass().getSimpleName()).log(Level.SEVERE, null, e);
+//        }
+//        return hostname;
+//    }
 
     //Método para agregar agregar notificaciones
     public void addMessage(String summary, boolean isError) {
