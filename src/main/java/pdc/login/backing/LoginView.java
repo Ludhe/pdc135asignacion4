@@ -7,10 +7,6 @@ package pdc.login.backing;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -38,6 +34,7 @@ public class LoginView implements Serializable {
 
     @PostConstruct
     void init() {
+        //En el inicio validar si la cookie existe, si ya existe, redirije al formulario
         myCookie = new MyCookie();
         if (myCookie.getCookieValue("session") != null) {
             myCookie.redirect("/form.jsf");
@@ -60,10 +57,12 @@ public class LoginView implements Serializable {
         this.password = password;
     }
 
-    //Método al dar click al botón iniciar
-    //1: todo ok
-    //2: error en las credenciales
-    //3: error de conexión
+    /*
+    * Método que se ejecuta al dar click al botón iniciar del Login
+    * Case 1: Se inició la sesión sin errores
+    * Case 2: Hubo un error con las credenciales proporcionadas
+    * Case 3: Hubo un error en la conexión con el servidor
+     */
     public void login() throws IOException, LdapException {
         if (usuario != null && !usuario.isEmpty() && password != null && !password.isEmpty()) {
             user = new Usuario(usuario, password);
@@ -87,20 +86,11 @@ public class LoginView implements Serializable {
         }
     }
 
-    //Para mostrar en qué hostname está conectado
-//    public String getHostname() {
-//        InetAddress ip;
-//        String hostname = "";
-//        try {
-//            ip = InetAddress.getLocalHost();
-//            hostname = ip.getHostName();
-//        } catch (UnknownHostException e) {
-//            Logger.getLogger(this.getClass().getClass().getSimpleName()).log(Level.SEVERE, null, e);
-//        }
-//        return hostname;
-//    }
-
-    //Método para agregar agregar notificaciones
+    /*
+    * Método que agrega las notificaciones tipo "growl" de Primefaces
+    * @param summary pequeño resumen en texto de la notificación a mostrar
+    * @param isError boolean: true si el mensaje es de error, false si el mensaje es solo una notificación  
+     */
     public void addMessage(String summary, boolean isError) {
         FacesMessage message = new FacesMessage(isError ? FacesMessage.SEVERITY_ERROR : FacesMessage.SEVERITY_INFO, summary, null);
         FacesContext.getCurrentInstance().addMessage(null, message);

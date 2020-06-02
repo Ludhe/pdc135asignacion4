@@ -22,18 +22,28 @@ import pdc.login.entity.Usuario;
  */
 public class Login {
 
-    public Login() {
+    /**
+     * Variables necesarias para el login
+     */
+    private static String USER;
+    private final static String DOMAIN = "nuegado";
+    //25.16.250.146
+    private final static String TREE_IP = "192.168.122.195";
+    private static LdapConnectionConfig connectionConfig = new LdapConnectionConfig();
+    private static LdapConnection connection;
+    private static Dn dn;
 
-    }
-
-    //Método para realizar la conexión con la base de datos
+    /**
+     * Método para hacer la conexión con la base de datos de directorio
+     *
+     * @param usuario Es el usuario con el que se va a iniciar sesión
+     * @param puerto Puerto de la IP en el cuál se encuentra la base de datos
+     * @return Regresa la conexión con la base de datos
+     * @throws org.apache.directory.api.ldap.model.exception.LdapException
+     */
     public static LdapConnection tryLogin(Usuario usuario, int puerto) throws LdapException {
-        LdapConnectionConfig connectionConfig = new LdapConnectionConfig();
-        LdapConnection connection;
-        Dn dn;
-        final String USER;
-        final String DOMAIN = "tipicos";      
-        connectionConfig.setLdapHost("25.16.250.146");
+
+        connectionConfig.setLdapHost(TREE_IP);
         connectionConfig.setLdapPort(puerto);
         USER = "cn=" + usuario.getUid() + ",dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
         try {
@@ -47,20 +57,22 @@ public class Login {
         }
         return connection;
     }
-    
 
-    //Método para validar a la hora de hacer el login
-    //1: todo ok
-    //2: error en las credenciales
-    //3: error de conexión
+    /**
+     * Método para checkear si se puede iniciar sesión en el servidor con las
+     * credenciales dadas
+     *
+     * @param usuario Es el usuario con el que se va a iniciar sesión
+     * @return 1: Se inició la sesión sin errores
+     *         2: Hubo un error con las credenciales proporcionadas 
+     *         3: Hubo un error en la conexión con el servidor
+     * ************* 390 port
+     * @throws java.io.IOException
+     */
     public static int checkLogin(Usuario usuario) throws IOException {
-        LdapConnectionConfig connectionConfig = new LdapConnectionConfig();
-        LdapConnection connection;
-        Dn dn;
-        final String USER;
-        final String DOMAIN = "tipicos";
-        connectionConfig.setLdapHost("25.16.250.146");
-        connectionConfig.setLdapPort(390);
+
+        connectionConfig.setLdapHost(TREE_IP);
+        connectionConfig.setLdapPort(389);
         USER = "cn=" + usuario.getUid() + ",dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
         try {
             dn = new Dn(USER);

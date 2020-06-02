@@ -19,6 +19,9 @@ import java.util.Base64;
  */
 public class Serializacion {
     
+    /*
+     * A partir de un String devuelve el objeto serializado
+     */
     public static Object fromString(String s) throws IOException, ClassNotFoundException {
         byte[] data = Base64.getDecoder().decode(s);
         ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
@@ -27,6 +30,9 @@ public class Serializacion {
         return o;
     }
 
+    /*
+     * A partir de un objeto serializado devuelve el texto
+     */
     public static String toString(Serializable o) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);

@@ -6,7 +6,6 @@
 package utils;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.context.ExternalContext;
@@ -36,7 +35,9 @@ public class MyCookie {
         return request;
     }
 
-    //Crear la cookie
+    /*
+     * Método que crea la cookie, nombre y valor
+     */
     public void setCookieValue(String name, String value) {
         Cookie cookie = null;
         Cookie[] cookies = getResquest().getCookies();
@@ -57,7 +58,9 @@ public class MyCookie {
         getResponse().addCookie(cookie);
     }
 
-    //Cuando la cookie exista, redirigir a otra página
+    /*
+     * Método que redirige a otra página si la cookie existe
+     */
     public void redirect(String url) {
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         try {
@@ -67,7 +70,9 @@ public class MyCookie {
         }
     }
 
-    //Para leer la cookie
+    /*
+     * Método que obtiene el valor de la cookie a partir del nombre
+     */
     public String getCookieValue(String name) {
         Cookie[] cookies = getResquest().getCookies();
         if (cookies != null) {
@@ -75,29 +80,32 @@ public class MyCookie {
                 if (cookies[i].getName().equals(name)) {
                     return cookies[i].getValue();
                 }
-            }           
+            }
         }
         return null;
     }
-    
-    public void removeCookie(String name){
+
+    /*
+     * Método que elimina la cookie a partir del nombre
+     */
+    public void removeCookie(String name) {
         Cookie cookie = null;
         Cookie[] cookies = getResquest().getCookies();
         for (Cookie c : cookies) {
             if (c.getName().equals(name)) {
                 cookie = c;
-                break;             
+                break;
             }
         }
-        
-        if (cookie !=null) {
+
+        if (cookie != null) {
             cookie.setValue("");
-        }else{
+        } else {
             cookie = new Cookie(name, "");
             cookie.setPath(getResquest().getContextPath());
         }
         cookie.setMaxAge(0);
         getResponse().addCookie(cookie);
     }
-    
+
 }

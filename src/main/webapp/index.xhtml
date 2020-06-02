@@ -20,7 +20,6 @@
                 <h:form id="loginForm">
                     <p:growl id="growl" showDetail="true" sticky="true" />
                     <h1> Iniciar sesión</h1>
-                    <!--h:outputLabel id="hostame" value = "Hostname ID:  {loginView.hostname}" /-->
                     <br/><br/>
                     <p:inputText id="usuario" class="texto"  placeholder="Usuario" value="#{loginView.usuario}" required="true" requiredMessage="Ingrese un usuario" maxlength="25">
                         <p:keyFilter regEx="/[a-zA-ZñÑ]+/"/>  

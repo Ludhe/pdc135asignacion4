@@ -19,29 +19,17 @@ public class Usuarioldap implements Serializable{
     private String sn;
     private String cn;
     private String pass;
-    private String callerid;
 
-    public Usuarioldap(String uid, String sn, String cn, String pass, String callerid) {
+    public Usuarioldap(String uid, String sn, String cn, String pass) {
         this.uid = uid;
         this.sn = sn;
         this.cn = cn;
         this.pass = pass;
-        this.callerid = callerid;
     }
 
    
     public Usuarioldap() {
     }
-
-    public String getCallerid() {
-        return callerid;
-    }
-
-    public void setCallerid(String callerid) {
-        this.callerid = callerid;
-    }
-
-    
     
     public void setUid(String uid) {
        this.uid = uid;
