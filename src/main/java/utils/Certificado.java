@@ -5,6 +5,7 @@
  */
 package utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -17,6 +18,8 @@ import java.security.cert.Certificate;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -29,6 +32,7 @@ import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.Date;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -47,6 +51,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.io.pem.PemGenerationException;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
+import pdc.login.entity.Usuarioldap;
 
 /**
  *
@@ -57,7 +62,7 @@ public class Certificado {
     public Certificado() {
         Security.addProvider(new BouncyCastleProvider());
     }
-    
+
     private final static String BC_PROVIDER = BouncyCastleProvider.PROVIDER_NAME;
 
     /*
@@ -65,14 +70,17 @@ public class Certificado {
      * @param user Nombre el usuario dueño del certificado
      * @param pair Llave privada y certificado del usuario
      */
-    public File writeUserCert(String user, Pair<PrivateKey, Certificate> pair) throws FileNotFoundException, IOException {
-        File userCert = new File("/home/dmmaga/certificadosRadius/" + user + "Cert.pem");
-        FileOutputStream fos = new FileOutputStream(userCert);
-        JcaPEMWriter writer = new JcaPEMWriter(new PrintWriter(fos));
-        writer.writeObject(pair.getRight());
-        writer.flush();
-        fos.close();
-        return userCert;
+    public String writeUserCert(Usuarioldap user, Pair<PrivateKey, Certificate> pair) throws FileNotFoundException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+        char[] certPass = user.getPass().toCharArray();
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        // Key store expects a load first to initialize.
+        keyStore.load(null, certPass);
+        // Store our domain certificate, with the private key and the cert chain
+        keyStore.setKeyEntry(user.getUid()+ "@tipicos.uesocc", pair.getLeft(), certPass,
+                new X509Certificate[]{(X509Certificate) pair.getRight()});
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        keyStore.store(baos, certPass);
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 
     /*
@@ -168,7 +176,6 @@ public class Certificado {
         KeySpec keySpec = new PKCS8EncodedKeySpec(reader.readPemObject().getContent());
         reader.close();
         KeyFactory kf = KeyFactory.getInstance("RSA", BC_PROVIDER);
-        System.out.println(kf.getAlgorithm());
         return kf.generatePrivate(keySpec);
     }
 

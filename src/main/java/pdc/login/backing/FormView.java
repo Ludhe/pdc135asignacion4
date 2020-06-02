@@ -5,22 +5,27 @@
  */
 package pdc.login.backing;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.PrivateKey;
-import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
@@ -30,7 +35,6 @@ import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.primefaces.PrimeFaces;
 import pdc.login.entity.Usuario;
 import pdc.login.entity.Usuarioldap;
@@ -51,7 +55,7 @@ public class FormView implements Serializable {
     private MyCookie myCookie;
     private Usuario user;
     //Variables del directorio LDAP, modificar dominio
-    public static final String DOMAIN = "nuegado";
+    public static final String DOMAIN = "pupusa";
     public static final String DIR_ROOT = "ou=usuarios,dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
     private LdapConnection connection;
     private LdapConnection masterConnection;
@@ -60,8 +64,8 @@ public class FormView implements Serializable {
     private Usuarioldap selectedUsuario;
     private List<Usuarioldap> usuariosList;
     //Variables para certificados
-    File caCert = new File("/home/dmmaga/certificadosRadius/ca.pem");
-    Certificado certUtils;
+    File caCert = new File("/home/doratt/certificadosRadius/ca.pem");
+    Certificado certUtils = new Certificado();
 
     public LdapConnection getMasterConnection() {
         return masterConnection;
@@ -111,8 +115,6 @@ public class FormView implements Serializable {
         if (myCookie.getCookieValue("session") == null) {
             myCookie.redirect("/index.jsf");
         }
-        certUtils = new Certificado();
-        Security.addProvider(new BouncyCastleProvider());
     }
 
     /**
@@ -206,15 +208,15 @@ public class FormView implements Serializable {
     public void crearLdap() throws Exception {
         if (tempUser.isValid() && tempUser != null) {
             if (masterConnection.isConnected()) {
-                //encriptar contraseña
-                String passMD5 = getHash(tempUser.getPass(), "MD5");
-                tempUser.setPass(passMD5);
                 //Para los certificados
                 X509CertificateHolder caHolder = certUtils.readPemCertificates(caCert);
                 X509Certificate cert = certUtils.convertCertificate(caHolder);
-                Pair<PrivateKey, Certificate> pair = certUtils.generateCert(tempUser.getUid()+ "@tipicos.uesocc", cert);
-                File userCert = certUtils.writeUserCert(tempUser.getUid(), pair);
-                certUtils.writeEncryptedUserKey(tempUser.getUid(), pair);
+                Pair<PrivateKey, Certificate> pair = certUtils.generateCert(tempUser.getUid() + "@tipicos.uesocc", cert);
+                String encodedCert = certUtils.writeUserCert(tempUser, pair);
+                //certUtils.writeEncryptedUserKey(tempUser.getUid(), pair);
+                //encriptar contraseña
+                String passMD5 = getHash(tempUser.getPass(), "MD5");
+                tempUser.setPass(passMD5);
                 //Para LDAP
                 StringBuilder builder = new StringBuilder();
                 builder.append("uid=").append(tempUser.getUid()).append("," + DIR_ROOT);
@@ -224,22 +226,22 @@ public class FormView implements Serializable {
                             new DefaultEntry(
                                     dnInsertar, // The Dn
                                     "objectClass: inetOrgPerson",
-                                    "objectClass: ",
                                     "objectClass: organizationalPerson",
                                     "objectClass: person",
                                     "objectClass: top",
                                     "cn", tempUser.getCn(),
                                     "sn", tempUser.getSn(),
                                     "uid", tempUser.getUid(),
-                                    "userPassword", passMD5
+                                    "userPassword", passMD5,
+                                    "userPKCS12", encodedCert
                             ));
-
-                    usuariosList = getLdapUsers();
-                    tempUser = new Usuarioldap();
+                    
+                    usuariosList = getLdapUsers();                    
                     PrimeFaces current = PrimeFaces.current();
                     current.executeScript("PF('ouAgregar').hide();");
                     addMessage("Se creó el nuevo usuario", false);
-                    downloadCertAndKey();
+                    downloadCertAndKey(encodedCert, tempUser.getUid());
+                    
                 } catch (LdapException ex) {
                     Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
                     if (ex.getClass() == LdapEntryAlreadyExistsException.class) {
@@ -253,9 +255,38 @@ public class FormView implements Serializable {
             }
         }
     }
-    
-    public void downloadCertAndKey(){
-        System.out.println("aquí va a ir el código pa descargar las cosas :c");
+
+    public void downloadCertAndKey(String encodedCert, String nombre) throws IOException {
+        byte[] data = Base64.getDecoder().decode(encodedCert);
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        externalContext.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
+        externalContext.setResponseContentLength(data.length);
+        externalContext.setResponseContentType("application/pkcs12"); 
+        externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\""+nombre+"-cert.pfx\""); 
+
+        BufferedInputStream input = null;
+        BufferedOutputStream output = null;
+
+        try {
+            input = new BufferedInputStream(new ByteArrayInputStream(data));
+            output = new BufferedOutputStream(externalContext.getResponseOutputStream());
+
+            byte[] buffer = new byte[10240];
+            for (int length; (length = input.read(buffer)) > 0;) {
+                output.write(buffer, 0, length);
+            }
+        } finally {
+            if (output!=null) {
+                output.flush();
+                output.close();
+            }
+            if (input!=null) {
+                input.close();
+            }
+        }
+        tempUser = new Usuarioldap();
+        facesContext.responseComplete();
     }
 
     /**

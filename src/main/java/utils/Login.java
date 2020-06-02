@@ -26,9 +26,9 @@ public class Login {
      * Variables necesarias para el login
      */
     private static String USER;
-    private final static String DOMAIN = "nuegado";
+    private final static String DOMAIN = "pupusa";
     //25.16.250.146
-    private final static String TREE_IP = "192.168.122.195";
+    private final static String TREE_IP = "localhost";
     private static LdapConnectionConfig connectionConfig = new LdapConnectionConfig();
     private static LdapConnection connection;
     private static Dn dn;

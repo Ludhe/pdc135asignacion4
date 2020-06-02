@@ -68,7 +68,7 @@
                         </p:inputText>
                         <p:outputLabel  value="Contraseña:" />
                         <p:inputText type="password" value="#{formView.tempUser.pass}" placeholder="Ingrese la contraseña" maxlength="25" required="true" requiredMessage="Ingrese la contraseña"/>
-                        <p:commandButton id="Aceptar" value="Aceptar" actionListener="#{formView.crearLdap}" update="formTabla"/>
+                        <p:commandButton id="Aceptar" ajax="false" value="Aceptar" actionListener="#{formView.crearLdap}" update="formTabla"/>
                         <p:commandButton value="Cancelar" oncomplete="PF('ouAgregar').hide()"/> 
                     </h:panelGrid>
                 </p:fieldset>
