@@ -26,10 +26,10 @@ public class Login {
      * Variables necesarias para el login
      */
     private static String USER;
-    private final static String DOMAIN = "pupusa";
+    private final static String DOMAIN = "tipicos";
     //25.16.250.146
-    private final static String TREE_IP = "localhost";
-    private static LdapConnectionConfig connectionConfig = new LdapConnectionConfig();
+    private final static String TREE_IP = "25.16.250.146";
+    private static final LdapConnectionConfig CONNECTION_CONFIG = new LdapConnectionConfig();
     private static LdapConnection connection;
     private static Dn dn;
 
@@ -43,12 +43,12 @@ public class Login {
      */
     public static LdapConnection tryLogin(Usuario usuario, int puerto) throws LdapException {
 
-        connectionConfig.setLdapHost(TREE_IP);
-        connectionConfig.setLdapPort(puerto);
+        CONNECTION_CONFIG.setLdapHost(TREE_IP);
+        CONNECTION_CONFIG.setLdapPort(puerto);
         USER = "cn=" + usuario.getUid() + ",dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
         try {
             dn = new Dn(USER);
-            connection = new LdapNetworkConnection(connectionConfig);
+            connection = new LdapNetworkConnection(CONNECTION_CONFIG);
             connection.setTimeOut(-1);
             connection.bind(dn, usuario.getPass());
         } catch (LdapException ex) {
@@ -71,12 +71,12 @@ public class Login {
      */
     public static int checkLogin(Usuario usuario) throws IOException {
 
-        connectionConfig.setLdapHost(TREE_IP);
-        connectionConfig.setLdapPort(389);
+        CONNECTION_CONFIG.setLdapHost(TREE_IP);
+        CONNECTION_CONFIG.setLdapPort(390);
         USER = "cn=" + usuario.getUid() + ",dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
         try {
             dn = new Dn(USER);
-            connection = new LdapNetworkConnection(connectionConfig);
+            connection = new LdapNetworkConnection(CONNECTION_CONFIG);
             connection.setTimeOut(-1);
             connection.bind(dn, usuario.getPass());
             connection.unBind();

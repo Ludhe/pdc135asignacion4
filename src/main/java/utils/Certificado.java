@@ -8,11 +8,8 @@ package utils;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.KeyFactory;
@@ -23,7 +20,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -40,15 +36,9 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PKCS8Generator;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
-import org.bouncycastle.openssl.jcajce.JcaPKCS8Generator;
-import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.util.io.pem.PemGenerationException;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import pdc.login.entity.Usuarioldap;
@@ -81,25 +71,6 @@ public class Certificado {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         keyStore.store(baos, certPass);
         return Base64.getEncoder().encodeToString(baos.toByteArray());
-    }
-
-    /*
-    * Encripta la llave privada del usuario y la esribe
-     * @param user Nombre el usuario dueño del certificado
-     * @param pair Llave privada y certificado del usuario
-     */
-    public void writeEncryptedUserKey(String user, Pair<PrivateKey, Certificate> pair) throws NoSuchAlgorithmException, OperatorCreationException, PemGenerationException, IOException {
-        //Encriptamos la llave del cliente para mayor seguridad
-        JceOpenSSLPKCS8EncryptorBuilder encryptorBuilder = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.PBE_SHA1_3DES);
-        encryptorBuilder.setRandom(SecureRandom.getInstance("NativePRNGNonBlocking"));
-        encryptorBuilder.setPasssword("pdc135".toCharArray());
-        OutputEncryptor oe = encryptorBuilder.build();
-        JcaPKCS8Generator gen = new JcaPKCS8Generator(pair.getLeft(), oe);
-        PemObject obj = gen.generate();
-        //Escribimos el resultado de la llave encriptada a su respectivo archivo
-        JcaPEMWriter pemWrt = new JcaPEMWriter(new FileWriter("/home/dmmaga/certificadosRadius/" + user + "PrivKey.pem"));
-        pemWrt.writeObject(obj);
-        pemWrt.close();
     }
 
     /*
@@ -150,7 +121,7 @@ public class Certificado {
         String signatureAlgorithm = "SHA256WithRSA";
         //Quien firma el certificado
         ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithm)
-                .build(readPemPrivateKey(new File("/home/dmmaga/certificadosRadius/cakey.pem")));
+                .build(readPemPrivateKey(new File("~/certificadosRadius/cakey.pem")));
         //Valido desde
         Instant startDate = Instant.now();
         //Valido hasta

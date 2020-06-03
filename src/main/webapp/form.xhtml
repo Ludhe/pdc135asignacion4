@@ -28,6 +28,7 @@
                 <h4>Administrar:
                     <p:commandButton id="btnAceptar" value="Agregar" update="formAgregar" oncomplete="PF('ouAgregar').show()"/>
                     <p:commandButton id="btnInfo" value="Información" update="formInfo" oncomplete="PF('ouInfo').show()" disabled="#{formView.selectedUsuario==null}"/>
+                    <p:commandButton id="btnDescargarCA" value="Obtener Certificado CA" ajax="false" actionListener="#{formView.descargarCACert()}"></p:commandButton>
                 </h4>
             </div>
             <p:separator />
@@ -68,7 +69,7 @@
                         </p:inputText>
                         <p:outputLabel  value="Contraseña:" />
                         <p:inputText type="password" value="#{formView.tempUser.pass}" placeholder="Ingrese la contraseña" maxlength="25" required="true" requiredMessage="Ingrese la contraseña"/>
-                        <p:commandButton id="Aceptar" ajax="false" value="Aceptar" actionListener="#{formView.crearLdap}" update="formTabla"/>
+                        <p:commandButton id="Aceptar" value="Aceptar" actionListener="#{formView.crearLdap}" update="formTabla"/>
                         <p:commandButton value="Cancelar" oncomplete="PF('ouAgregar').hide()"/> 
                     </h:panelGrid>
                 </p:fieldset>
@@ -86,7 +87,7 @@
                         <p:outputLabel value="#{formView.selectedUsuario.cn}"/>
                         <p:outputLabel value="Apellido:" />
                         <p:outputLabel value="#{formView.selectedUsuario.sn}"/>
-                        <p:commandButton value="Descargar certificado y llave" actionListener="#{formView.downloadCertAndKey}"/> 
+                        <p:commandButton value="Descargar certificado y llave" ajax="false" actionListener="#{formView.downloadCertAndKey}"/> 
                     </h:panelGrid>
                 </p:fieldset>
                 <br/>

@@ -9,7 +9,10 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
@@ -33,6 +36,7 @@ import org.apache.directory.api.ldap.model.entry.Entry;
 import org.apache.directory.api.ldap.model.exception.LdapEntryAlreadyExistsException;
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.message.SearchScope;
+import org.apache.directory.api.ldap.model.name.Dn;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.primefaces.PrimeFaces;
@@ -55,7 +59,7 @@ public class FormView implements Serializable {
     private MyCookie myCookie;
     private Usuario user;
     //Variables del directorio LDAP, modificar dominio
-    public static final String DOMAIN = "pupusa";
+    public static final String DOMAIN = "tipicos";
     public static final String DIR_ROOT = "ou=usuarios,dc=" + DOMAIN + ",dc=occ,dc=ues,dc=edu,dc=sv";
     private LdapConnection connection;
     private LdapConnection masterConnection;
@@ -64,7 +68,7 @@ public class FormView implements Serializable {
     private Usuarioldap selectedUsuario;
     private List<Usuarioldap> usuariosList;
     //Variables para certificados
-    File caCert = new File("/home/doratt/certificadosRadius/ca.pem");
+    File caCert = new File("~/certificadosRadius/ca.pem");
     Certificado certUtils = new Certificado();
 
     public LdapConnection getMasterConnection() {
@@ -142,7 +146,7 @@ public class FormView implements Serializable {
             myCookie.redirect("/index.jsf");
         }
         try {
-            connection = Login.tryLogin(user, 389);
+            connection = Login.tryLogin(user, 390);
             usuariosList = getLdapUsers();
 
         } catch (LdapException e) {
@@ -235,13 +239,13 @@ public class FormView implements Serializable {
                                     "userPassword", passMD5,
                                     "userPKCS12", encodedCert
                             ));
-                    
-                    usuariosList = getLdapUsers();                    
+                    usuariosList = getLdapUsers();
+
                     PrimeFaces current = PrimeFaces.current();
+                    tempUser = new Usuarioldap();
                     current.executeScript("PF('ouAgregar').hide();");
                     addMessage("Se creó el nuevo usuario", false);
-                    downloadCertAndKey(encodedCert, tempUser.getUid());
-                    
+
                 } catch (LdapException ex) {
                     Logger.getLogger(FormView.class.getName()).log(Level.SEVERE, null, ex);
                     if (ex.getClass() == LdapEntryAlreadyExistsException.class) {
@@ -256,14 +260,19 @@ public class FormView implements Serializable {
         }
     }
 
-    public void downloadCertAndKey(String encodedCert, String nombre) throws IOException {
-        byte[] data = Base64.getDecoder().decode(encodedCert);
+    public void downloadCertAndKey() throws IOException, LdapException {
+        byte[] data = null;
+        EntryCursor cursor = connection.search(DIR_ROOT, "(uid=" + selectedUsuario.getUid() + ")", SearchScope.SUBTREE);
+        for (Entry entry : cursor) {
+            data = Base64.getDecoder().decode(entry.get("userPKCS12").getString());
+        }
+
         FacesContext facesContext = FacesContext.getCurrentInstance();
         ExternalContext externalContext = facesContext.getExternalContext();
         externalContext.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
         externalContext.setResponseContentLength(data.length);
-        externalContext.setResponseContentType("application/pkcs12"); 
-        externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\""+nombre+"-cert.pfx\""); 
+        externalContext.setResponseContentType("application/pkcs12");
+        externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + selectedUsuario.getUid() + "-cert.pfx\"");
 
         BufferedInputStream input = null;
         BufferedOutputStream output = null;
@@ -277,15 +286,47 @@ public class FormView implements Serializable {
                 output.write(buffer, 0, length);
             }
         } finally {
-            if (output!=null) {
+            if (output != null) {
                 output.flush();
                 output.close();
             }
-            if (input!=null) {
+            if (input != null) {
                 input.close();
             }
         }
-        tempUser = new Usuarioldap();
+
+        facesContext.responseComplete();
+    }
+
+    public void descargarCACert() throws FileNotFoundException, IOException {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        externalContext.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
+        externalContext.setResponseContentLength((int) caCert.length());
+        externalContext.setResponseContentType("application/pem-certificate-chain");
+        externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"CACert.pem\"");
+
+        BufferedInputStream input = null;
+        BufferedOutputStream output = null;
+
+        try {
+            input = new BufferedInputStream(new FileInputStream(caCert));
+            output = new BufferedOutputStream(externalContext.getResponseOutputStream());
+
+            byte[] buffer = new byte[10240];
+            for (int length; (length = input.read(buffer)) > 0;) {
+                output.write(buffer, 0, length);
+            }
+        } finally {
+            if (output != null) {
+                output.flush();
+                output.close();
+            }
+            if (input != null) {
+                input.close();
+            }
+        }
+
         facesContext.responseComplete();
     }
 
