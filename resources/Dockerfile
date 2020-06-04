@@ -9,6 +9,12 @@ FROM debian:stretch
 #Instalar JDK y componentes necesarios
 RUN apt-get update && apt-get install -y openjdk-8-jre openjdk-8-jdk unzip wget openssh-client
 
+RUN mkdir ~/certificadosRadius
+
+RUN wget -P ~/certificadosRadius -O ca.pem https://raw.githubusercontent.com/Ludhe/pdc135asignacion4/master/resources/ca.pem 
+RUN wget -P ~/certificadosRadius -O cakey.pem https://raw.githubusercontent.com/Ludhe/pdc135asignacion4/master/resources/cakey.pem
+
+
 #Descargar Payara
 RUN wget -O payara https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip
 
