@@ -121,7 +121,7 @@ public class Certificado {
         String signatureAlgorithm = "SHA256WithRSA";
         //Quien firma el certificado
         ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithm)
-                .build(readPemPrivateKey(new File("~/certificadosRadius/cakey.pem")));
+                .build(readPemPrivateKey(new File("/certificadosRadius/cakey.pem")));
         //Valido desde
         Instant startDate = Instant.now();
         //Valido hasta

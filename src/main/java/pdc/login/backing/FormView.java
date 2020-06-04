@@ -68,7 +68,7 @@ public class FormView implements Serializable {
     private Usuarioldap selectedUsuario;
     private List<Usuarioldap> usuariosList;
     //Variables para certificados
-    File caCert = new File("~/certificadosRadius/ca.pem");
+    File caCert = new File("/certificadosRadius/ca.pem");
     Certificado certUtils = new Certificado();
 
     public LdapConnection getMasterConnection() {
